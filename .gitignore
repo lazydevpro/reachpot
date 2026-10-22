@@ -24,3 +24,8 @@ scripts/out/
 
 # local chain binaries (downloaded by scripts/chain/install.sh)
 .bin/
+
+# local chain deployments change on every restart
+deployments/local.json
+# app data (PGlite)
+apps/web/.data/

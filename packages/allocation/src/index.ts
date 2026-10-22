@@ -1,3 +1,3 @@
-export * from './allocate.js';
-export * from './tree.js';
-export * from './snapshot.js';
+export * from './allocate';
+export * from './tree';
+export * from './snapshot';

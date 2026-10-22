@@ -3,7 +3,7 @@
 //   reachpot-verify snapshot.json [--root 0x…] [--total 123] [--hash 0x…]
 import { readFileSync } from 'node:fs';
 import type { Hex } from 'viem';
-import { snapshotHash, verifySnapshot, type Snapshot } from './snapshot.js';
+import { snapshotHash, verifySnapshot, type Snapshot } from './snapshot';
 
 const args = process.argv.slice(2);
 const file = args.find((a) => !a.startsWith('--'));

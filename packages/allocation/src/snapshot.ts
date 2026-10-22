@@ -1,7 +1,7 @@
 import { blake2b } from '@noble/hashes/blake2.js';
 import { bytesToHex, getAddress, type Address, type Hex } from 'viem';
-import { allocate, type CreatorViews } from './allocate.js';
-import { buildTree } from './tree.js';
+import { allocate, type CreatorViews } from './allocate';
+import { buildTree } from './tree';
 
 export const SNAPSHOT_SCHEMA = 'reachpot.snapshot/v1';
 

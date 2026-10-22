@@ -16,6 +16,8 @@
     "spike": "pnpm --filter @reachpot/scripts exec tsx spike-precompile.ts",
     "chain:up": "scripts/chain/up.sh",
     "chain:down": "scripts/chain/down.sh",
-    "accounts": "pnpm --filter @reachpot/scripts exec tsx accounts.ts"
+    "accounts": "pnpm --filter @reachpot/scripts exec tsx accounts.ts",
+    "deploy:local": "pnpm build:contracts && pnpm --filter @reachpot/core gen:abi && pnpm --filter @reachpot/scripts exec tsx deploy.ts --network local",
+    "deploy:testnet": "pnpm build:contracts && pnpm --filter @reachpot/core gen:abi && pnpm --filter @reachpot/scripts exec tsx deploy.ts --network testnet"
   }
 }

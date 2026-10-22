@@ -4,8 +4,8 @@ import { writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getAddress, type Address } from 'viem';
-import { allocate, type CreatorViews } from './allocate.js';
-import { buildTree } from './tree.js';
+import { allocate, type CreatorViews } from './allocate';
+import { buildTree } from './tree';
 
 const acct = (n: number): Address => getAddress(`0x${n.toString(16).padStart(2, '0').repeat(20)}`);
 const M = 1_000_000n; // 6-decimals asset

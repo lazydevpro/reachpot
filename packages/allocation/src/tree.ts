@@ -1,6 +1,6 @@
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
 import type { Address, Hex } from 'viem';
-import type { Allocation } from './allocate.js';
+import type { Allocation } from './allocate';
 
 /** Leaf encoding matches `Reachpot.leaf(address,uint256)`: keccak256(bytes.concat(keccak256(abi.encode(a, amt)))). */
 export const LEAF_ENCODING = ['address', 'uint256'];

@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+/*
+ * Reachpot design tokens — soft, rounded, near-monochrome (krafa.ai-inspired):
+ * Open Runde, plum-black ink on a near-white canvas, pill buttons, big-radius cards, one warm accent gradient.
+ */
+@theme {
+  --font-sans: "Open Runde", ui-sans-serif, -apple-system, system-ui, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-canvas: #f6f5f7;
+  --color-surface: #ffffff;
+  --color-sunken: #efedf1;
+  --color-ink: #25202d;
+  --color-ink-2: #3d3746;
+  --color-muted: #5f5968;
+  --color-faint: #9b95a3;
+  --color-line: rgb(37 32 45 / 0.08);
+  --color-line-strong: rgb(37 32 45 / 0.14);
+
+  --color-accent: #7b5cff;
+  --color-accent-2: #ff7a59;
+  --color-accent-soft: #efeaff;
+  --color-good: #12a150;
+  --color-good-soft: #e6f6ec;
+  --color-warn: #c77700;
+  --color-warn-soft: #fff4e0;
+  --color-bad: #d93f3f;
+  --color-bad-soft: #fdecec;
+
+  --radius-card: 28px;
+  --radius-tile: 20px;
+
+  --shadow-soft: 0 1px 2px rgb(37 32 45 / 0.04), 0 8px 24px -12px rgb(37 32 45 / 0.12);
+  --shadow-lift: 0 1px 2px rgb(37 32 45 / 0.05), 0 18px 40px -18px rgb(37 32 45 / 0.25);
+  --shadow-pill: 0 1px 1px rgb(37 32 45 / 0.06), 0 4px 12px -4px rgb(37 32 45 / 0.14);
+
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  @keyframes shimmer {
+    from { background-position: -200% 0; }
+    to { background-position: 200% 0; }
+  }
+}
+
+@layer base {
+  html {
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    font-family: var(--font-sans);
+    color: var(--color-muted);
+  }
+  h1, h2, h3, h4 {
+    color: var(--color-ink);
+    font-weight: 600;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+  p { text-wrap: pretty; }
+  ::selection { background: var(--color-accent-soft); color: var(--color-ink); }
+  :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: 10px; }
+}
+
+@utility tabular { font-variant-numeric: tabular-nums; }
+
+/* Glossy app-icon tile used by the logo and CTA. */
+@utility app-icon {
+  background:
+    radial-gradient(120% 90% at 20% 15%, #ffd2c2 0%, transparent 55%),
+    radial-gradient(110% 100% at 85% 25%, #c9b8ff 0%, transparent 60%),
+    radial-gradient(120% 120% at 50% 100%, #8f74ff 0%, #ff8a6b 100%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6), inset 0 -6px 14px rgb(37 32 45 / 0.12), var(--shadow-pill);
+}
+
+@utility skeleton {
+  background: linear-gradient(90deg, var(--color-sunken) 25%, #f7f6f9 50%, var(--color-sunken) 75%);
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}

@@ -11,8 +11,8 @@ import {
   snapshotHash,
   verifySnapshot,
   type CreatorViews,
-} from '../src/index.js';
-import { FIXTURE_DIR, GOLDEN_CASES, goldenJson } from '../src/fixtures.js';
+} from '../src/index';
+import { FIXTURE_DIR, GOLDEN_CASES, goldenJson } from '../src/fixtures';
 
 const a = (n: number): Address => getAddress(`0x${n.toString(16).padStart(40, '0')}`);
 const M = 1_000_000n;

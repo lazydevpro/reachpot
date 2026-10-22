@@ -4,7 +4,7 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import type { SubmittableExtrinsic } from '@polkadot/api/types';
 import type { KeyringPair } from '@polkadot/keyring/types';
 import type { Signer } from '@polkadot/types/types';
-import { u8aToHex } from '@polkadot/util';
+import { bytesToHex } from 'viem';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import type { Address } from 'viem';
 
@@ -65,7 +65,7 @@ export function normalizeSs58(addr: string): string {
 }
 
 export function publicKeyHex(addr: string): string {
-  return u8aToHex(decodeAddress(addr));
+  return bytesToHex(decodeAddress(addr));
 }
 
 export type NativeSigner = KeyringPair | { address: string; signer: Signer };
