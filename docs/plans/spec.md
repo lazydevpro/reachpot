@@ -25,7 +25,7 @@ on-chain. Rejecting a creator saves the brand nothing, because the share goes to
 |---|---|
 | `Revive` (EVM) + `AssetsPrecompiles` | The Solidity escrow holds **native `Assets` tokens through their ERC-20 precompile** (`0x{assetId}…00010000`), so any brand token works with no wrapping and no bridge. |
 | `AssetConversion` (native DEX) | Creators paid in a brand token can **cash out to tPOT** in one action. Campaigns also add liquidity and volume to the brand's pool. |
-| `TransactionStorage` | The full view snapshot is **stored on-chain for about 7 days and then pruned**. That covers the dispute window and fits YouTube's ≤30-day storage rule. Only the hash and Merkle root stay permanently. |
+| `TransactionStorage` | The allocation snapshot is **published on-chain**. Standard nodes keep it for `RetentionPeriod` (100,800 blocks, about 7 days), which covers the dispute window. The contract pins only its hash and location. |
 | `Nfts` | Creators earn a **non-transferable creator badge** whose attributes (campaigns, views, earned) form a portable on-chain résumé. |
 | `MetaTx` *(stretch)* | Creator actions are sponsored, so creators never need tPOT. |
 
@@ -86,7 +86,11 @@ on-chain. Rejecting a creator saves the brand nothing, because the share goes to
 3. **Creator cash-out signing.** Creator funds sit in their H160's fallback account. A DEX swap is a native extrinsic,
    so it needs either a native wallet (e.g. Talisman) or `Revive.ethSubstrateCall` / `dispatchAsFallbackAccount`
    from MetaMask. Needs verification.
-4. **Pruned public node.** `TransactionStorage` data and old block bodies may not be retrievable from the public RPC
+4. **Snapshot data policy.** Retention is node-dependent: archive nodes may keep block bodies, and the stored data,
+   indefinitely. YouTube API data policies limit storing statistics, so the on-chain snapshot should carry only what
+   verification needs (per-creator eligible totals and allocations, not raw per-video statistics). Do a policy review
+   before mainnet.
+5. **Pruned public node.** `TransactionStorage` data and old block bodies may not be retrievable from the public RPC
    after pruning. Fetch and cache the snapshot at post time.
 
 ## Eligibility notes

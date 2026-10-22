@@ -27,7 +27,7 @@ claw it back, and rejecting a creator saves the brand nothing because their shar
 |---|---|
 | `Revive` EVM + native-asset ERC-20 precompiles | The Solidity escrow holds native `Assets` tokens directly through their precompile (`0x{assetId}000000000000000000000000` + `00010000`). Any project token works, with no wrapping and no bridge. |
 | `AssetConversion` native DEX | Creators paid in a project token swap to tPOT in one action, which also adds volume to that token's pool. |
-| `TransactionStorage` | The view snapshot is stored on-chain for about 7 days and then pruned. That covers the dispute window and respects YouTube's data-retention rules; only the hash and Merkle root stay permanently. |
+| `TransactionStorage` | The allocation snapshot is published on-chain. Standard nodes keep it for its retention period (about 7 days on testnet), which is long enough for anyone to verify the payout root during the dispute window. The contract keeps only the snapshot's hash and location. |
 | `Nfts` | Creators earn a non-transferable creator badge whose attributes form a portable on-chain résumé. |
 
 ## How it works

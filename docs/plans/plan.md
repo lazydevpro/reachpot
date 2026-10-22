@@ -9,7 +9,7 @@ flowchart LR
   Brand -- "approve (precompile) + createCampaign" --> RP[Reachpot.sol<br/>Revive EVM]
   Creator -- "verify channel + submit Short" --> API[Web API + DB]
   API -- "views snapshot" --> Oracle
-  Oracle -- "store(snapshot)" --> TS[(TransactionStorage<br/>~7-day retention)]
+  Oracle -- "store(snapshot)" --> TS[(TransactionStorage)]
   Oracle -- "postRoot(root, total, snapshotHash)" --> RP
   Guardian -. "cancelRoot (dispute window)" .-> RP
   Keeper -- "claimMany" --> RP
