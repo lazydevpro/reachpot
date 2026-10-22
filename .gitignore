@@ -21,3 +21,6 @@ coverage/
 
 # script run state
 scripts/out/
+
+# local chain binaries (downloaded by scripts/chain/install.sh)
+.bin/

@@ -1,170 +1,147 @@
-// Phase 0 spike: prove (or disprove) the write path of the native-asset ERC-20 precompile from Revive contracts,
-// and find out what a fresh creator wallet (no native balance) needs to receive a native asset.
-// Re-runnable: created asset / deployed probe are cached in scripts/out/spike-state.json.
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+// Spike: prove the write path of the native-asset ERC-20 precompile from Revive contracts, and find out what a
+// recipient needs to receive a native asset. `pnpm spike [--network local|testnet]` → docs/spike-precompile-<network>.md
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { erc20Abi, parseEventLogs, type Address, type Hash } from 'viem';
+import { erc20Abi, parseEventLogs, type Abi, type Address, type Hash, type Hex } from 'viem';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
-import {
-  EVM_POT,
-  NATIVE_DECIMALS,
-  POT,
-  ROOT,
-  assetPrecompileAddress,
-  evmClients,
-  fmt,
-  freeBalance,
-  loadArtifact,
-  mappedAccount,
-  nativeAdmin,
-  nativeApi,
-  sendNative,
-} from './lib/portaldot.js';
+import { assetPrecompileAddress, fmtUnits } from '@reachpot/core';
+import { accountOfH160, freeBalance, h160OfAccount, isMapped, sendNative } from '@reachpot/core/native';
+import { ROOT, evmClients, evmRoles, localCreators, nativeAdmin, native, net, short } from './lib/ctx.js';
 
-const OUT = resolve(ROOT, 'scripts/out');
-const STATE = resolve(OUT, 'spike-state.json');
-mkdirSync(OUT, { recursive: true });
-const state: { assetId?: number; probe?: Address } = existsSync(STATE) ? JSON.parse(readFileSync(STATE, 'utf8')) : {};
-const save = () => writeFileSync(STATE, JSON.stringify(state, null, 2));
-
+const DEC = 6;
+const UNIT = 10n ** BigInt(DEC);
 const log: { step: string; ok: boolean; detail: string; tx?: string }[] = [];
 const record = (step: string, ok: boolean, detail: string, tx?: string) => {
   log.push({ step, ok, detail, tx });
   console.log(`${ok ? '✅' : '❌'} ${step} — ${detail}${tx ? `\n   tx ${tx}` : ''}`);
 };
 
-const DEC = 6;
-const UNIT = 10n ** BigInt(DEC);
+const art = JSON.parse(readFileSync(resolve(ROOT, 'contracts/out/PrecompileProbe.sol/PrecompileProbe.json'), 'utf8'));
+const probeAbi = art.abi as Abi;
 
-const api = await nativeApi();
-const admin = nativeAdmin();
-const { account, publicClient, walletClient } = evmClients();
-const deployerNative = await mappedAccount(api, account.address);
+const { api, units } = await native();
+const admin = await nativeAdmin();
+const { deployer, brand } = evmRoles();
+const d = evmClients(deployer);
+const b = evmClients(brand);
+const brandNative = await accountOfH160(api, brand.address);
+console.log(`network ${net.name}; native decimals ${units.decimals}; admin ${admin.address}; brand ${brand.address} (${brandNative})`);
 
-// 1. Gas for the EVM deployer (funded from the native admin).
-const adminFree = await freeBalance(api, admin.address);
-console.log(`native admin ${admin.address}: ${fmt(adminFree, NATIVE_DECIMALS)} tPOT`);
-if (adminFree < 8n * POT) throw new Error('fund the native admin with at least 8 tPOT first (see TODO.md)');
-if ((await freeBalance(api, deployerNative)) < 3n * POT) {
-  const r = await sendNative(api, api.tx.balances.transferKeepAlive(deployerNative, 5n * POT), admin);
-  record('fund EVM deployer', true, `5 tPOT → ${deployerNative}`, r.txHash);
+// 0. A native-asset holder account must exist (hold >= ED) or minting fails with Token.CannotCreate.
+if ((await freeBalance(api, brandNative)) < units.existentialDeposit * 10n) {
+  const r = await sendNative(api, api.tx.balances.transferKeepAlive(brandNative, units.existentialDeposit * 20n), admin);
+  record('fund brand native account (20× ED)', true, brandNative, r.txHash);
 }
 
-// 2. Native asset "rUSD" (6 decimals) owned by the native admin, minted to the EVM deployer's mapped account.
-if (state.assetId === undefined) {
-  let id = 0;
-  do id = 700_000 + Math.floor(Math.random() * 99_999);
-  while ((await api.query.assets.asset(id)).isSome);
+// 1. Native asset rUSD owned by the admin, minted to the brand's account.
+let id = 0;
+do id = 700_000 + Math.floor(Math.random() * 99_999);
+while ((await api.query.assets.asset(id)).isSome);
+{
   const r = await sendNative(
     api,
     api.tx.utility.batchAll([
       api.tx.assets.create(id, admin.address, 1),
-      api.tx.assets.setMetadata(id, 'Reachpot USD (test)', 'rUSD', DEC),
-      api.tx.assets.mint(id, deployerNative, 1_000_000n * UNIT),
+      api.tx.assets.setMetadata(id, 'Reachpot USD (spike)', 'rUSD', DEC),
+      api.tx.assets.mint(id, brandNative, 1_000_000n * UNIT),
     ]),
     admin,
   );
-  state.assetId = id;
-  save();
-  record('create native asset', true, `asset ${id} rUSD, 1,000,000 minted to deployer`, r.txHash);
+  record('create native asset + mint to brand', true, `asset ${id}`, r.txHash);
 }
-const token = assetPrecompileAddress(state.assetId!);
-const bal = (who: Address) => publicClient.readContract({ address: token, abi: erc20Abi, functionName: 'balanceOf', args: [who] });
-console.log(`rUSD asset ${state.assetId} precompile ${token}; deployer balance ${fmt(await bal(account.address), DEC)}`);
+const token = assetPrecompileAddress(id);
+const bal = (who: Address) => d.publicClient.readContract({ address: token, abi: erc20Abi, functionName: 'balanceOf', args: [who] });
+record('precompile balanceOf(brand)', (await bal(brand.address)) === 1_000_000n * UNIT, `${fmtUnits(await bal(brand.address), DEC)} rUSD at ${token}`);
 
-// 3. Deploy the probe.
-const probeArt = loadArtifact('PrecompileProbe.sol', 'PrecompileProbe');
-if (!state.probe) {
-  const hash = await walletClient.deployContract({ abi: probeArt.abi, bytecode: probeArt.bytecode });
-  const rcpt = await publicClient.waitForTransactionReceipt({ hash });
-  if (rcpt.status !== 'success' || !rcpt.contractAddress) throw new Error(`probe deploy failed ${hash}`);
-  state.probe = rcpt.contractAddress;
-  save();
-  record('deploy PrecompileProbe', true, rcpt.contractAddress, hash);
-}
-const probe = state.probe!;
+// 2. Deploy probe.
+const deployHash = await d.walletClient.deployContract({ abi: probeAbi, bytecode: art.bytecode.object as Hex });
+const deployRcpt = await d.publicClient.waitForTransactionReceipt({ hash: deployHash });
+const probe = deployRcpt.contractAddress!;
+record('deploy PrecompileProbe', deployRcpt.status === 'success', probe, deployHash);
 
-async function send(step: string, req: Parameters<typeof walletClient.writeContract>[0]): Promise<{ ok: boolean; hash?: Hash; logs?: any[] }> {
+async function write(step: string, client: ReturnType<typeof evmClients>, req: Record<string, unknown>) {
   try {
-    const { request } = await publicClient.simulateContract({ ...req, account } as any);
-    const hash = await walletClient.writeContract(request as any);
-    const rcpt = await publicClient.waitForTransactionReceipt({ hash });
-    const ok = rcpt.status === 'success';
-    if (!ok) record(step, false, 'receipt status reverted', hash);
-    return { ok, hash, logs: rcpt.logs };
+    const { request } = await client.publicClient.simulateContract({ ...req, account: client.walletClient.account } as never);
+    const hash: Hash = await client.walletClient.writeContract(request as never);
+    const rcpt = await client.publicClient.waitForTransactionReceipt({ hash });
+    if (rcpt.status !== 'success') record(step, false, 'reverted', hash);
+    return { ok: rcpt.status === 'success', hash, logs: rcpt.logs };
   } catch (e) {
-    record(step, false, (e as Error).message.split('\n').slice(0, 3).join(' | '));
-    return { ok: false };
+    record(step, false, short(e));
+    return { ok: false as const };
   }
 }
 
-// 4. EOA approve through the precompile.
+// 3. EOA approve through the precompile; 4. contract transferFrom.
 const amount = 100n * UNIT;
-const a = await send('approve via precompile', { address: token, abi: erc20Abi, functionName: 'approve', args: [probe, amount] } as any);
-if (a.ok) {
-  const allowance = await publicClient.readContract({ address: token, abi: erc20Abi, functionName: 'allowance', args: [account.address, probe] });
-  record('approve via precompile', allowance === amount, `allowance=${fmt(allowance, DEC)}`, a.hash);
+const ap = await write('approve via precompile', b, { address: token, abi: erc20Abi, functionName: 'approve', args: [probe, amount] });
+if (ap.ok) {
+  const allowance = await b.publicClient.readContract({ address: token, abi: erc20Abi, functionName: 'allowance', args: [brand.address, probe] });
+  record('approve via precompile', allowance === amount, `allowance ${fmtUnits(allowance, DEC)}`, ap.hash);
 }
+const pl = await write('contract transferFrom (pull)', d, { address: probe, abi: probeAbi, functionName: 'pull', args: [token, brand.address, amount] });
+if (pl.ok) record('contract transferFrom (pull)', (await bal(probe)) === amount, `probe holds ${fmtUnits(await bal(probe), DEC)} rUSD`, pl.hash);
 
-// 5. Contract transferFrom through the precompile.
-const p = await send('contract transferFrom (pull)', { address: probe, abi: probeArt.abi, functionName: 'pull', args: [token, account.address, amount] } as any);
-if (p.ok) record('contract transferFrom (pull)', true, `probe holds ${fmt(await bal(probe), DEC)} rUSD`, p.hash);
-
-// 6. Contract transfer to recipients in different states.
+// 5. Contract transfer to recipients in different states.
 async function pushTo(label: string, to: Address) {
   const before = await bal(to);
-  const r = await send(`push → ${label}`, { address: probe, abi: probeArt.abi, functionName: 'push', args: [token, to, 10n * UNIT] } as any);
-  if (!r.ok) return false;
-  const ev = parseEventLogs({ abi: probeArt.abi, logs: r.logs!, eventName: 'Pushed' })[0] as any;
+  const r = await write(`push → ${label}`, d, { address: probe, abi: probeAbi, functionName: 'push', args: [token, to, 10n * UNIT] });
+  if (!r.ok) return;
+  const ev = parseEventLogs({ abi: probeAbi, logs: r.logs!, eventName: 'Pushed' })[0] as unknown as { args: { ok: boolean; ret: Hex } };
   const got = (await bal(to)) - before;
-  const ok = Boolean(ev?.args?.ok) && got === 10n * UNIT;
-  record(`push → ${label}`, ok, `inner ok=${ev?.args?.ok} received=${fmt(got, DEC)} ret=${ev?.args?.ret}`, r.hash);
-  return ok;
+  record(`push → ${label}`, ev.args.ok && got === 10n * UNIT, `inner ok=${ev.args.ok} received=${fmtUnits(got, DEC)}${ev.args.ok ? '' : ` ret=${ev.args.ret.slice(0, 74)}`}`, r.hash);
 }
-
 const fresh = () => privateKeyToAccount(generatePrivateKey()).address;
 
-// 6a. Fresh H160: no native balance, no asset account.
-const f1 = fresh();
-await pushTo('fresh H160, no native balance', f1);
+await pushTo('fresh H160, no native balance', fresh());
 
-// 6b. Fresh H160 that first receives the existential deposit (0.1 tPOT) from the EVM side.
-const f2 = fresh();
+const withEd = fresh();
 try {
-  const hash = await walletClient.sendTransaction({ to: f2, value: EVM_POT / 10n });
-  await publicClient.waitForTransactionReceipt({ hash });
-  record('send ED (0.1 tPOT) to fresh H160 via EVM', true, f2, hash);
+  const hash = await d.walletClient.sendTransaction({ to: withEd, value: units.existentialDeposit * units.nativeToEthRatio });
+  await d.publicClient.waitForTransactionReceipt({ hash });
+  record('send ED to fresh H160 via EVM', true, withEd, hash);
 } catch (e) {
-  record('send ED (0.1 tPOT) to fresh H160 via EVM', false, (e as Error).message.split('\n')[0]);
+  record('send ED to fresh H160 via EVM', false, short(e));
 }
-await pushTo('fresh H160 with ED', f2);
+await pushTo('fresh H160 with ED', withEd);
 
-// 6c. Fresh H160 "touched" by the asset admin (admin pays the asset-account deposit).
-const f3 = fresh();
+const touched = fresh();
 try {
-  const r = await sendNative(api, api.tx.assets.touchOther(state.assetId!, await mappedAccount(api, f3)), admin);
-  record('assets.touchOther fresh H160', true, f3, r.txHash);
+  const r = await sendNative(api, api.tx.assets.touchOther(id, await accountOfH160(api, touched)), admin);
+  record('assets.touchOther fresh H160 (admin pays deposit)', true, touched, r.txHash);
 } catch (e) {
-  record('assets.touchOther fresh H160', false, (e as Error).message);
+  record('assets.touchOther fresh H160 (admin pays deposit)', false, short(e));
 }
-await pushTo('fresh H160 touched by admin', f3);
+await pushTo('fresh H160 touched by admin', touched);
 
-// 7. Persist evidence.
+// 6. The real Reachpot path: a native creator account mapped into Revive.
+if (net.name === 'local') {
+  const [bob] = await localCreators();
+  if (!(await isMapped(api, bob.address))) {
+    const r = await sendNative(api, api.tx.revive.mapAccount(), bob);
+    record('creator revive.mapAccount', true, bob.address, r.txHash);
+  }
+  const bobH160 = await h160OfAccount(api, bob.address);
+  const nativeBefore = (await api.query.assets.account(id, bob.address)).isSome;
+  await pushTo(`mapped native creator ${bob.address.slice(0, 8)}… (H160 ${bobH160.slice(0, 10)}…)`, bobH160);
+  const acct = await api.query.assets.account(id, bob.address);
+  record('payout landed in creator native account', acct.isSome, `native assets.account(${id}, Bob) = ${acct.isSome ? acct.unwrap().balance.toString() : 'none'} (existed before: ${nativeBefore}); native free ${await freeBalance(api, bob.address)}`);
+}
+
 const md = [
-  `# Spike: native-asset ERC-20 precompile write path`,
-  ``,
-  `Run ${new Date().toISOString()} on Portaldot V3 testnet (chainId 420420777).`,
-  ``,
-  `- rUSD native asset id: \`${state.assetId}\` → precompile \`${token}\``,
-  `- PrecompileProbe: \`${probe}\``,
-  `- EVM deployer: \`${account.address}\` (native \`${deployerNative}\`)`,
-  ``,
-  `| Step | Result | Detail | Tx |`,
-  `|---|---|---|---|`,
+  `# Spike: native-asset ERC-20 precompile write path (${net.label})`,
+  '',
+  `Run ${new Date().toISOString()} · chain id ${net.chainId} · native decimals ${units.decimals}`,
+  '',
+  `- rUSD native asset \`${id}\` → precompile \`${token}\``,
+  `- PrecompileProbe \`${probe}\``,
+  '',
+  '| Step | Result | Detail | Tx |',
+  '|---|---|---|---|',
   ...log.map((l) => `| ${l.step} | ${l.ok ? '✅' : '❌'} | ${l.detail.replace(/\|/g, '\\|')} | ${l.tx ? `\`${l.tx}\`` : ''} |`),
-  ``,
+  '',
 ].join('\n');
 mkdirSync(resolve(ROOT, 'docs'), { recursive: true });
-writeFileSync(resolve(ROOT, 'docs/spike-precompile.md'), md);
-console.log('\nwrote docs/spike-precompile.md');
+writeFileSync(resolve(ROOT, `docs/spike-precompile-${net.name}.md`), md);
+console.log(`\nwrote docs/spike-precompile-${net.name}.md`);
 await api.disconnect();

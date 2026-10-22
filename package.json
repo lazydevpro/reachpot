@@ -13,6 +13,9 @@
     "test:contracts": "cd contracts && forge test",
     "test:allocation": "pnpm --filter @reachpot/allocation test",
     "verify": "pnpm --filter @reachpot/allocation verify",
-    "spike": "pnpm --filter @reachpot/scripts spike"
+    "spike": "pnpm --filter @reachpot/scripts exec tsx spike-precompile.ts",
+    "chain:up": "scripts/chain/up.sh",
+    "chain:down": "scripts/chain/down.sh",
+    "accounts": "pnpm --filter @reachpot/scripts exec tsx accounts.ts"
   }
 }
