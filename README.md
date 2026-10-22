@@ -7,8 +7,11 @@ A brand locks a pot on-chain in tPOT or any native `Assets` token, including its
 When the window closes, the pot is split **by views**, with a per-creator cap, and paid to every creator's Portaldot
 account. Creators cash out on Portaldot's native DEX, and every payout levels up a soulbound creator badge.
 
-> **Status:** the full lifecycle runs end to end on a local chain with Portaldot's runtime: contracts, keeper, web app
-> and in-browser verification ([e2e run](docs/e2e-local.md)). Testnet deployment is next ([runbook](docs/testnet.md)).
+> **Status:** deployed on **Portaldot V3 testnet**: `Reachpot` at
+> [`0xcfcdb8ccac9b95534aedbbe9c90e49a6a1d493cf`](deployments/testnet.json) (deploy tx
+> `0x437ca8659ea19af2ba7cc578e755eed2f3d1aaca4a7d1a65dada5412c6273a15`, block 150,033), with the rUSD/NOVA native
+> assets, native-DEX pools and the badge collection. The full lifecycle runs end to end on a local chain with Portaldot's
+> runtime ([e2e run](docs/e2e-local.md)); the scripted testnet run is next ([runbook](docs/testnet.md)).
 > Built for [Portaldot Hacker House 2026](https://dorahacks.io/hackathon/portaldot-hacker-house-2026/detail), Ecosystem DApps track.
 
 ## Why
@@ -110,6 +113,9 @@ docs/                 Spec, plan, testnet runbook, spike + e2e evidence
 | Which Shorts count, and view counts | **Oracle (v1).** Mitigated by the published snapshot, open-source allocation, the dispute window and the guardian. |
 
 Known limitations:
+- On Portaldot, deploying costs a storage deposit of **~0.078 tPOT per byte of initcode** (0.06/byte code deposit + 30%
+  code-hash lockup), so the contract is deliberately small (5.9 KB initcode, 448 tPOT on testnet): no owner/admin surface
+  (oracle and guardian fixed at deploy), standard tokens only (no fee-on-transfer; native assets qualify).
 - Enabling payouts reserves a refundable `revive.mapAccount` deposit of 52 bytes plus 1 item, which is **about 3.3 tPOT on testnet**.
 - `TransactionStorage` retention depends on the node: archive nodes may keep block bodies, and YouTube's data-policy
   limits apply to stored statistics. That's why the snapshot carries only per-creator totals and allocations.

@@ -5,12 +5,14 @@ import {Test} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Reachpot} from "../src/Reachpot.sol";
 import {MockAsset, TinyMerkle} from "./utils/Mocks.sol";
+import {CampaignView} from "./utils/CampaignView.sol";
 
 contract ReachpotTest is Test {
+    using CampaignView for Reachpot;
+
     Reachpot rp;
     MockAsset token;
 
-    address owner = makeAddr("owner");
     address oracle = makeAddr("oracle");
     address guardian = makeAddr("guardian");
     address brand = makeAddr("brand");
@@ -25,7 +27,7 @@ contract ReachpotTest is Test {
 
     function setUp() public {
         vm.warp(1_800_000_000);
-        rp = new Reachpot(owner, oracle, guardian, DISPUTE, MIN_DELAY, ROOT_TIMEOUT, CLAIM_WINDOW);
+        rp = new Reachpot(oracle, guardian, DISPUTE, MIN_DELAY, ROOT_TIMEOUT, CLAIM_WINDOW);
         token = new MockAsset();
         token.mint(brand, 1_000_000e6);
         vm.prank(brand);
@@ -53,7 +55,7 @@ contract ReachpotTest is Test {
     }
 
     function _toMeasured(uint256 id) internal {
-        Reachpot.Campaign memory c = rp.getCampaign(id);
+        Reachpot.Campaign memory c = rp.get(id);
         vm.warp(uint256(c.end) + c.measurementDelay);
     }
 
@@ -94,6 +96,13 @@ contract ReachpotTest is Test {
         }
     }
 
+    /// @dev Pays creator `i` alone through payoutMany (the only payout entrypoint).
+    function _pay1(uint256 id, Alloc memory a, uint256 i, uint128 amount) internal returns (uint256) {
+        Reachpot.Payout[] memory ps = new Reachpot.Payout[](1);
+        ps[0] = Reachpot.Payout(creators[i], amount, a.proofs[i]);
+        return rp.payoutMany(id, ps);
+    }
+
     function _toPayable(uint256 id, Alloc memory a) internal {
         _toMeasured(id);
         _post(id, a);
@@ -108,7 +117,7 @@ contract ReachpotTest is Test {
         assertEq(id, 1);
         assertEq(token.balanceOf(address(rp)), POOL);
         assertEq(token.balanceOf(brand), before - POOL);
-        Reachpot.Campaign memory c = rp.getCampaign(id);
+        Reachpot.Campaign memory c = rp.get(id);
         assertEq(c.brand, brand);
         assertEq(c.pool, POOL);
         assertEq(c.rulesHash, keccak256("rules v1"));
@@ -155,7 +164,7 @@ contract ReachpotTest is Test {
 
     function test_postRoot_revertsBeforeMeasurementEnds() public {
         uint256 id = _create();
-        Reachpot.Campaign memory c = rp.getCampaign(id);
+        Reachpot.Campaign memory c = rp.get(id);
         vm.warp(uint256(c.end) + c.measurementDelay - 1);
         Alloc memory a = _defaultAlloc();
         vm.prank(oracle);
@@ -185,11 +194,11 @@ contract ReachpotTest is Test {
 
         vm.prank(guardian);
         rp.cancelRoot(id, "bot views");
-        assertEq(rp.getCampaign(id).root, bytes32(0));
+        assertEq(rp.get(id).root, bytes32(0));
         assertEq(uint8(rp.status(id)), uint8(Reachpot.Status.AwaitingRoot));
 
         _post(id, a);
-        assertEq(rp.getCampaign(id).root, a.root);
+        assertEq(rp.get(id).root, a.root);
     }
 
     function test_cancelRoot_revertsAfterWindow() public {
@@ -223,7 +232,7 @@ contract ReachpotTest is Test {
             assertEq(token.balanceOf(creators[i]), a.amounts[i]);
             assertTrue(rp.isPaid(id, creators[i]));
         }
-        assertEq(rp.getCampaign(id).claimed, a.total);
+        assertEq(rp.get(id).claimed, a.total);
 
         uint256 brandBefore = token.balanceOf(brand);
         assertEq(rp.refundable(id), POOL - a.total);
@@ -243,17 +252,16 @@ contract ReachpotTest is Test {
         assertEq(token.balanceOf(creators[0]), a.amounts[0]);
     }
 
-    function test_payout_revertsOnDoublePayAndBadProof() public {
+    function test_payout_skipsDoublePay_andRevertsOnBadProof() public {
         uint256 id = _create();
         Alloc memory a = _defaultAlloc();
         _toPayable(id, a);
-        rp.payout(id, creators[0], a.amounts[0], a.proofs[0]);
-
-        vm.expectRevert(abi.encodeWithSelector(Reachpot.AlreadyPaid.selector, creators[0]));
-        rp.payout(id, creators[0], a.amounts[0], a.proofs[0]);
+        assertEq(_pay1(id, a, 0, a.amounts[0]), 1);
+        assertEq(_pay1(id, a, 0, a.amounts[0]), 0); // already paid: skipped, never paid twice
+        assertEq(token.balanceOf(creators[0]), a.amounts[0]);
 
         vm.expectRevert(abi.encodeWithSelector(Reachpot.InvalidProof.selector, creators[1]));
-        rp.payout(id, creators[1], a.amounts[1] + 1, a.proofs[1]);
+        _pay1(id, a, 1, a.amounts[1] + 1);
     }
 
     // ------------------------------------------------ failing recipient (AC5)
@@ -273,21 +281,21 @@ contract ReachpotTest is Test {
         assertEq(token.balanceOf(creators[1]), 0);
         assertEq(token.balanceOf(creators[2]), a.amounts[2]);
         assertFalse(rp.isPaid(id, creators[1]));
-        assertEq(rp.getCampaign(id).claimed, a.amounts[0] + a.amounts[2]);
+        assertEq(rp.get(id).claimed, a.amounts[0] + a.amounts[2]);
 
         token.setBlocked(creators[1], false);
-        rp.payout(id, creators[1], a.amounts[1], a.proofs[1]);
+        assertEq(_pay1(id, a, 1, a.amounts[1]), 1);
         assertEq(token.balanceOf(creators[1]), a.amounts[1]);
     }
 
-    function test_payout_single_revertsWhenTransferFails() public {
+    function test_payout_failingSingleRecipient_staysUnpaid() public {
         uint256 id = _create();
         Alloc memory a = _defaultAlloc();
         _toPayable(id, a);
         token.setBlocked(creators[0], true);
-        vm.expectRevert();
-        rp.payout(id, creators[0], a.amounts[0], a.proofs[0]);
+        assertEq(_pay1(id, a, 0, a.amounts[0]), 0);
         assertFalse(rp.isPaid(id, creators[0]));
+        assertEq(rp.get(id).claimed, 0);
     }
 
     // ------------------------------------------------------ refunds / expiry
@@ -322,7 +330,7 @@ contract ReachpotTest is Test {
         uint256 id = _create();
         Alloc memory a = _defaultAlloc();
         _toPayable(id, a);
-        rp.payout(id, creators[0], a.amounts[0], a.proofs[0]);
+        _pay1(id, a, 0, a.amounts[0]);
         rp.refund(id); // leftover 50
 
         vm.warp(block.timestamp + CLAIM_WINDOW);
@@ -332,21 +340,18 @@ contract ReachpotTest is Test {
         assertEq(token.balanceOf(address(rp)), 0);
 
         vm.expectRevert(abi.encodeWithSelector(Reachpot.WrongStatus.selector, Reachpot.Status.Expired));
-        rp.payout(id, creators[1], a.amounts[1], a.proofs[1]);
+        _pay1(id, a, 1, a.amounts[1]);
     }
 
     // ------------------------------------------------------------------ admin
 
-    function test_setOracleAndGuardian_onlyOwner() public {
-        address n = makeAddr("new");
-        vm.expectRevert();
-        rp.setOracle(n);
-        vm.startPrank(owner);
-        rp.setOracle(n);
-        rp.setGuardian(n);
-        vm.stopPrank();
-        assertEq(rp.oracle(), n);
-        assertEq(rp.guardian(), n);
+    function test_roles_fixedAtDeploy_andZeroRejected() public {
+        assertEq(rp.oracle(), oracle);
+        assertEq(rp.guardian(), guardian);
+        vm.expectRevert(Reachpot.InvalidParams.selector);
+        new Reachpot(address(0), guardian, DISPUTE, MIN_DELAY, ROOT_TIMEOUT, CLAIM_WINDOW);
+        vm.expectRevert(Reachpot.InvalidParams.selector);
+        new Reachpot(oracle, address(0), DISPUTE, MIN_DELAY, ROOT_TIMEOUT, CLAIM_WINDOW);
     }
 
     // ------------------------------------------------------------------- fuzz
@@ -368,7 +373,7 @@ contract ReachpotTest is Test {
         rp.payoutMany(id, _payouts(a));
         if (rp.refundable(id) > 0) rp.refund(id); // nothing left over when the whole pool is allocated
 
-        Reachpot.Campaign memory c = rp.getCampaign(id);
+        Reachpot.Campaign memory c = rp.get(id);
         assertLe(c.claimed, c.totalAllocated);
         assertLe(c.totalAllocated, c.pool);
         assertEq(token.balanceOf(address(rp)), c.pool - c.claimed - c.refunded);

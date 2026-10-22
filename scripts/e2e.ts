@@ -10,7 +10,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { stringToU8a, u8aToHex } from '@polkadot/util';
 import { erc20Abi, keccak256, parseEventLogs, toBytes, type Address, type Hex } from 'viem';
-import { CampaignStatus, STATUS_LABEL, fmtUnits, reachpotAbi } from '@reachpot/core';
+import { CampaignStatus, STATUS_LABEL, campaignFromTuple, fmtUnits, reachpotAbi } from '@reachpot/core';
 import { assetBalance, assetKind, freeBalance, isMapped, nativeKind, readStoredData, sendNative } from '@reachpot/core/native';
 import { snapshotHash, verifySnapshot, type Snapshot } from '@reachpot/allocation';
 import { ROOT, arg, demoCreators, evmClients, evmRoles, loadDeployment, nativeAdmin, native, net } from './lib/ctx.js';
@@ -147,7 +147,7 @@ ok('soulbound creator badges minted/updated (Nfts)', badgeAct.message, badgeAct.
 
 // ------------------------------------------------- 4. independent verification
 const bytes = await readStoredData(chain, snap.block, snap.index);
-const onchain = await brand.publicClient.readContract({ address: reachpot, abi: reachpotAbi, functionName: 'getCampaign', args: [BigInt(id)] });
+const onchain = campaignFromTuple(await brand.publicClient.readContract({ address: reachpot, abi: reachpotAbi, functionName: 'campaigns', args: [BigInt(id)] }));
 const s = JSON.parse(new TextDecoder().decode(bytes)) as Snapshot;
 const v = verifySnapshot(s, { root: onchain.root, totalAllocated: onchain.totalAllocated, hash: onchain.snapshotHash, bytes });
 if (!v.ok) throw new Error(`verification failed: ${v.problems.join('; ')}`);

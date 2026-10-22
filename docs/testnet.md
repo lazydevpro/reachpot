@@ -11,19 +11,19 @@ The native admin (`NATIVE_ADMIN_ADDRESS` in `.env`) pays deposits and fees and f
 pnpm accounts --network testnet
 ```
 
-Send it **about 45 tPOT**. Rough budget (14 decimals, testnet constants):
+Revive storage deposits dominate the cost on Portaldot (0.06 tPOT per byte + 0.15 per item, plus a 30% code-hash lockup
+on contract code). Measured costs (14 decimals):
 
 | What | tPOT |
 |---|---|
-| Gas for EVM roles (deployer 4, oracle 3, guardian 1, brand 3) | 11 |
-| 2 native assets (asset deposit 1 + metadata) | ~2.5 |
-| 2 DEX pools (setup fee 1 each) + liquidity (5 + 2) | 9 |
-| Badge collection (deposit 1) + metadata | ~2 |
-| 2 demo creators (mapping deposit ~3.3 + fees each) | ~7.5 |
-| TransactionStorage, payouts, badge attributes (~1.3 per creator) | ~4 |
-| **Total** | **~36** |
+| **Deploy `Reachpot.sol`** (5,965 B initcode × ~0.078) | **448** (actual, block 150,033) |
+| 2 native assets, 2 DEX pools (setup 1 each + 3 liquidity), badge collection | ~10 |
+| Each `createCampaign` (new storage slots) | ~19 |
+| Each `postRoot` | ~16 |
+| Each creator paid (payout flag slot) + their `revive.mapAccount` deposit | ~4 + ~3.3 |
+| Scripted e2e run with 2 creators | **~60** |
 
-Anything left over stays in the admin account. Deposits are reserved, not burned.
+Deposits are held, not burned, but must be available up front.
 
 ## 2. Deploy
 

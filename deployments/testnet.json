@@ -1,0 +1,64 @@
+{
+  "network": "testnet",
+  "chainId": 420420777,
+  "deployedAt": "2026-10-22T19:18:01.065Z",
+  "reachpot": {
+    "address": "0xcfcdb8ccac9b95534aedbbe9c90e49a6a1d493cf",
+    "deployTx": "0x437ca8659ea19af2ba7cc578e755eed2f3d1aaca4a7d1a65dada5412c6273a15",
+    "blockNumber": 150033
+  },
+  "roles": {
+    "owner": "0xEbe6D5dF1516B8B572a2F8009c50637B39822519",
+    "oracle": "0xEbe6D5dF1516B8B572a2F8009c50637B39822519",
+    "guardian": "0xEbe6D5dF1516B8B572a2F8009c50637B39822519",
+    "nativeAdmin": "5EqSmfgK1r4RCvxFaikQyH8j8Xktxs3Ay7SDYzURJWQqDUd5"
+  },
+  "windows": {
+    "disputeWindow": 600,
+    "minMeasurementDelay": 120,
+    "rootTimeout": 604800,
+    "claimWindow": 2592000
+  },
+  "native": {
+    "decimals": 14,
+    "symbol": "tPOT",
+    "nativeToEthRatio": "10000"
+  },
+  "assets": [
+    {
+      "id": 7770,
+      "symbol": "rUSD",
+      "name": "Reachpot USD (test)",
+      "decimals": 6,
+      "precompile": "0x00001e5a00000000000000000000000000010000",
+      "pool": {
+        "lpToken": 3,
+        "tx": "0xdd5068d0905d460534add28876f0d27f077e229945da465d1e3ef3098125fab2"
+      }
+    },
+    {
+      "id": 7771,
+      "symbol": "NOVA",
+      "name": "Nova (demo token)",
+      "decimals": 12,
+      "precompile": "0x00001e5b00000000000000000000000000010000",
+      "pool": {
+        "lpToken": 4,
+        "tx": "0x1f342a36bba13a3682e6a5061f399f270c3e8a5415fb01864f94221c2f8e6bc0"
+      }
+    }
+  ],
+  "badges": {
+    "collection": 4,
+    "tx": "0xa45f170a7cdd5e33fb71d68f05c1a0c45052c5b957762696c1c0027d40fdfe21"
+  },
+  "txs": {
+    "fund deployer": "0x47be80e917093fb02347cdb4451d069bf1030e9e120a1ad48b581987bbc5e396",
+    "create rUSD": "0x30ac3dbb2ede6b5b8d9484192e5f31707719c91f4675fd76d005f54573c9112a",
+    "pool rUSD/tPOT": "0xdd5068d0905d460534add28876f0d27f077e229945da465d1e3ef3098125fab2",
+    "create NOVA": "0x2aa18a2fae63872aed75f1c7df06b843f6f0cbc1b4ebe9f83ff6fc01390d5b97",
+    "pool NOVA/tPOT": "0x1f342a36bba13a3682e6a5061f399f270c3e8a5415fb01864f94221c2f8e6bc0",
+    "badge collection": "0xa45f170a7cdd5e33fb71d68f05c1a0c45052c5b957762696c1c0027d40fdfe21",
+    "badge collection metadata": "0x19ed3a14089ebaf06272537d85aff06cea98b0207d8030997e96a874975a8308"
+  }
+}

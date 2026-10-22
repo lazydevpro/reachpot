@@ -40,3 +40,31 @@ export const STATUS_LABEL: Record<CampaignStatus, string> = {
   [CampaignStatus.Expired]: 'Closed',
   [CampaignStatus.Abandoned]: 'Refunded',
 };
+
+/** Fields of `Reachpot.campaigns(id)`, in struct order (the auto-getter returns them as a tuple). */
+export interface OnchainCampaignTuple {
+  brand: Address;
+  start: bigint;
+  measurementDelay: number;
+  token: Address;
+  end: bigint;
+  pool: bigint;
+  totalAllocated: bigint;
+  claimed: bigint;
+  refunded: bigint;
+  capPerCreator: bigint;
+  minViews: bigint;
+  rootPostedAt: bigint;
+  rulesHash: `0x${string}`;
+  root: `0x${string}`;
+  snapshotHash: `0x${string}`;
+  snapshotBlock: number;
+  snapshotIndex: number;
+}
+
+export function campaignFromTuple(t: readonly unknown[]): OnchainCampaignTuple {
+  const [brand, start, measurementDelay, token, end, pool, totalAllocated, claimed, refunded, capPerCreator, minViews, rootPostedAt, rulesHash, root, snapshotHash, snapshotBlock, snapshotIndex] = t as [
+    Address, bigint, number, Address, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, `0x${string}`, `0x${string}`, `0x${string}`, number, number,
+  ];
+  return { brand, start, measurementDelay, token, end, pool, totalAllocated, claimed, refunded, capPerCreator, minViews, rootPostedAt, rulesHash, root, snapshotHash, snapshotBlock, snapshotIndex };
+}

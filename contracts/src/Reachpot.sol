@@ -2,9 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import {Ownable, Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /// @title Reachpot — pro-rata creator campaigns on Portaldot
@@ -12,8 +10,9 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 /// precompile. After the campaign window, the oracle posts a Merkle root of per-creator payouts (split by views,
 /// computed off-chain from a snapshot stored in `TransactionStorage`). The guardian can cancel a bad root during the
 /// dispute window; afterwards anyone can push payouts. Brands cannot withdraw a live pool.
-contract Reachpot is Ownable2Step, ReentrancyGuard {
-    using SafeERC20 for IERC20;
+/// @dev Kept deliberately small: on Portaldot, deploying costs a storage deposit of ~0.078 tPOT per byte of initcode,
+/// so there is no admin/owner surface — the oracle and guardian are fixed at deployment.
+contract Reachpot is ReentrancyGuard {
 
     enum Status {
         None,
@@ -80,25 +79,14 @@ contract Reachpot is Ownable2Step, ReentrancyGuard {
     /// @notice How long payouts stay claimable after the dispute window; then unclaimed funds return to the brand.
     uint64 public immutable claimWindow;
 
-    address public oracle;
-    address public guardian;
+    address public immutable oracle;
+    address public immutable guardian;
     uint256 public campaignCount;
 
-    mapping(uint256 id => Campaign) internal _campaigns;
+    mapping(uint256 id => Campaign) public campaigns;
     mapping(uint256 id => mapping(address account => bool)) public isPaid;
 
-    event CampaignCreated(
-        uint256 indexed id,
-        address indexed brand,
-        IERC20 indexed token,
-        uint128 pool,
-        uint64 start,
-        uint64 end,
-        uint32 measurementDelay,
-        uint128 capPerCreator,
-        uint64 minViews,
-        bytes32 rulesHash
-    );
+    event CampaignCreated(uint256 indexed id, address indexed brand, IERC20 indexed token, uint128 pool, bytes32 rulesHash);
     event RootPosted(
         uint256 indexed id,
         bytes32 root,
@@ -111,20 +99,17 @@ contract Reachpot is Ownable2Step, ReentrancyGuard {
     event Paid(uint256 indexed id, address indexed account, uint128 amount);
     event PayoutFailed(uint256 indexed id, address indexed account, uint128 amount, bytes reason);
     event Refunded(uint256 indexed id, address indexed brand, uint128 amount);
-    event OracleSet(address oracle);
-    event GuardianSet(address guardian);
 
     error NotOracle();
     error NotGuardian();
     error InvalidParams();
     error WrongStatus(Status status);
-    error TransferShortfall(uint256 received);
     error AllocationExceedsPool();
     error InvalidProof(address account);
     error AlreadyPaid(address account);
     error OverAllocated();
     error NothingToRefund();
-    error PayoutTransferFailed(bytes reason);
+    error TransferFailed(bytes reason);
 
     modifier onlyOracle() {
         if (msg.sender != oracle) revert NotOracle();
@@ -137,14 +122,13 @@ contract Reachpot is Ownable2Step, ReentrancyGuard {
     }
 
     constructor(
-        address owner_,
         address oracle_,
         address guardian_,
         uint64 disputeWindow_,
         uint32 minMeasurementDelay_,
         uint64 rootTimeout_,
         uint64 claimWindow_
-    ) Ownable(owner_) {
+    ) {
         if (oracle_ == address(0) || guardian_ == address(0) || rootTimeout_ == 0 || claimWindow_ == 0) {
             revert InvalidParams();
         }
@@ -154,13 +138,12 @@ contract Reachpot is Ownable2Step, ReentrancyGuard {
         minMeasurementDelay = minMeasurementDelay_;
         rootTimeout = rootTimeout_;
         claimWindow = claimWindow_;
-        emit OracleSet(oracle_);
-        emit GuardianSet(guardian_);
     }
 
     // ------------------------------------------------------------------ brand
 
     /// @notice Escrow `p.pool` of `p.token` and open a campaign. Requires a prior `approve` (precompile or ERC-20).
+    /// Tokens must transfer exactly the requested amount (no fee-on-transfer); Portaldot native assets always do.
     function createCampaign(CampaignParams calldata p) external nonReentrant returns (uint256 id) {
         if (
             address(p.token) == address(0) || p.pool == 0 || p.capPerCreator == 0 || p.start >= p.end
@@ -168,7 +151,7 @@ contract Reachpot is Ownable2Step, ReentrancyGuard {
         ) revert InvalidParams();
 
         id = ++campaignCount;
-        Campaign storage c = _campaigns[id];
+        Campaign storage c = campaigns[id];
         c.brand = msg.sender;
         c.token = p.token;
         c.pool = p.pool;
@@ -179,24 +162,21 @@ contract Reachpot is Ownable2Step, ReentrancyGuard {
         c.minViews = p.minViews;
         c.rulesHash = p.rulesHash;
 
-        uint256 before = p.token.balanceOf(address(this));
-        p.token.safeTransferFrom(msg.sender, address(this), p.pool);
-        uint256 received = p.token.balanceOf(address(this)) - before;
-        if (received != p.pool) revert TransferShortfall(received);
+        (bool ok, bytes memory reason) = _call(p.token, abi.encodeCall(IERC20.transferFrom, (msg.sender, address(this), p.pool)));
+        if (!ok) revert TransferFailed(reason);
 
-        emit CampaignCreated(
-            id, msg.sender, p.token, p.pool, p.start, p.end, p.measurementDelay, p.capPerCreator, p.minViews, p.rulesHash
-        );
+        emit CampaignCreated(id, msg.sender, p.token, p.pool, p.rulesHash);
     }
 
     /// @notice Return whatever the brand is owed: the unallocated remainder once payouts are final, everything still
     /// unclaimed once the claim window has expired, or the whole pool if no root was posted in time.
     function refund(uint256 id) external nonReentrant returns (uint128 amount) {
-        Campaign storage c = _campaigns[id];
+        Campaign storage c = campaigns[id];
         amount = refundable(id);
         if (amount == 0) revert NothingToRefund();
         c.refunded += amount;
-        c.token.safeTransfer(c.brand, amount);
+        (bool ok, bytes memory reason) = _call(c.token, abi.encodeCall(IERC20.transfer, (c.brand, amount)));
+        if (!ok) revert TransferFailed(reason);
         emit Refunded(id, c.brand, amount);
     }
 
@@ -214,7 +194,7 @@ contract Reachpot is Ownable2Step, ReentrancyGuard {
     ) external onlyOracle {
         Status s = status(id);
         if (s != Status.AwaitingRoot) revert WrongStatus(s);
-        Campaign storage c = _campaigns[id];
+        Campaign storage c = campaigns[id];
         if (root == bytes32(0)) revert InvalidParams();
         if (totalAllocated > c.pool) revert AllocationExceedsPool();
 
@@ -231,7 +211,7 @@ contract Reachpot is Ownable2Step, ReentrancyGuard {
     function cancelRoot(uint256 id, string calldata reason) external onlyGuardian {
         Status s = status(id);
         if (s != Status.Disputable) revert WrongStatus(s);
-        Campaign storage c = _campaigns[id];
+        Campaign storage c = campaigns[id];
         bytes32 old = c.root;
         delete c.root;
         delete c.totalAllocated;
@@ -242,40 +222,19 @@ contract Reachpot is Ownable2Step, ReentrancyGuard {
         emit RootCancelled(id, old, reason);
     }
 
-    function setOracle(address oracle_) external onlyOwner {
-        if (oracle_ == address(0)) revert InvalidParams();
-        oracle = oracle_;
-        emit OracleSet(oracle_);
-    }
-
-    function setGuardian(address guardian_) external onlyOwner {
-        if (guardian_ == address(0)) revert InvalidParams();
-        guardian = guardian_;
-        emit GuardianSet(guardian_);
-    }
-
     // ---------------------------------------------------------------- payouts
 
-    /// @notice Pay one creator. Anyone may call; funds always go to `account`. Reverts if the transfer fails.
-    function payout(uint256 id, address account, uint128 amount, bytes32[] calldata proof) external nonReentrant {
-        Campaign storage c = _campaigns[id];
-        _requirePayable(id);
-        _verifyAndMark(id, c, account, amount, proof);
-        (bool ok, bytes memory reason) = _tryTransfer(c.token, account, amount);
-        if (!ok) revert PayoutTransferFailed(reason);
-        emit Paid(id, account, amount);
-    }
-
-    /// @notice Push many payouts. A recipient whose transfer fails (e.g. a native-asset account that cannot be
-    /// created) is skipped and stays claimable, so one bad recipient never blocks the batch. Invalid proofs revert.
+    /// @notice Push payouts; anyone may call (funds always go to the leaf's account). A recipient whose transfer fails
+    /// (e.g. a native-asset account that cannot be created) is skipped and stays payable, so one bad recipient never
+    /// blocks the batch. Invalid proofs revert.
     function payoutMany(uint256 id, Payout[] calldata payouts) external nonReentrant returns (uint256 paid) {
-        Campaign storage c = _campaigns[id];
+        Campaign storage c = campaigns[id];
         _requirePayable(id);
         for (uint256 i; i < payouts.length; ++i) {
             Payout calldata p = payouts[i];
             if (isPaid[id][p.account]) continue;
             _verifyAndMark(id, c, p.account, p.amount, p.proof);
-            (bool ok, bytes memory reason) = _tryTransfer(c.token, p.account, p.amount);
+            (bool ok, bytes memory reason) = _call(c.token, abi.encodeCall(IERC20.transfer, (p.account, p.amount)));
             if (ok) {
                 ++paid;
                 emit Paid(id, p.account, p.amount);
@@ -289,12 +248,8 @@ contract Reachpot is Ownable2Step, ReentrancyGuard {
 
     // ------------------------------------------------------------------ views
 
-    function getCampaign(uint256 id) external view returns (Campaign memory) {
-        return _campaigns[id];
-    }
-
     function status(uint256 id) public view returns (Status) {
-        Campaign storage c = _campaigns[id];
+        Campaign storage c = campaigns[id];
         if (c.brand == address(0)) return Status.None;
         uint256 t = block.timestamp;
         if (t < c.start) return Status.Scheduled;
@@ -312,7 +267,7 @@ contract Reachpot is Ownable2Step, ReentrancyGuard {
 
     /// @notice Amount the brand can currently withdraw via `refund`.
     function refundable(uint256 id) public view returns (uint128) {
-        Campaign storage c = _campaigns[id];
+        Campaign storage c = campaigns[id];
         Status s = status(id);
         uint128 owed;
         if (s == Status.Abandoned) owed = c.pool;
@@ -343,10 +298,10 @@ contract Reachpot is Ownable2Step, ReentrancyGuard {
         if (c.claimed > c.totalAllocated) revert OverAllocated();
     }
 
-    /// @dev SafeERC20.safeTransfer semantics, but reports failure instead of reverting. Native-asset precompiles revert
-    /// when the recipient account cannot be created; an empty return is only accepted from an address with code.
-    function _tryTransfer(IERC20 token, address to, uint256 amount) private returns (bool ok, bytes memory ret) {
-        (ok, ret) = address(token).call(abi.encodeCall(IERC20.transfer, (to, amount)));
+    /// @dev SafeERC20 semantics for transfer/transferFrom, but reports failure instead of reverting. Native-asset
+    /// precompiles revert when a recipient account cannot be created; an empty return is only accepted from code.
+    function _call(IERC20 token, bytes memory data) private returns (bool ok, bytes memory ret) {
+        (ok, ret) = address(token).call(data);
         if (!ok) return (ok, ret);
         ok = ret.length == 0 ? address(token).code.length != 0 : ret.length == 32 && abi.decode(ret, (bool));
     }

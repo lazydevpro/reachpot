@@ -6,7 +6,12 @@ solc_version = "0.8.28"
 # Revive runs standard EVM bytecode (AllowEVMBytecode = true). Stay on shanghai until the spike confirms newer opcodes.
 evm_version = "shanghai"
 optimizer = true
-optimizer_runs = 200
+# Optimised for size: deploying on Portaldot costs a storage deposit of ~0.078 tPOT per byte of initcode
+# (0.06/byte code deposit + 30% code-hash lockup), so bytecode size is the dominant deployment cost.
+optimizer_runs = 1
+via_ir = true
+bytecode_hash = "none"
+cbor_metadata = false
 # Golden fixtures shared with the TS allocation package.
 fs_permissions = [{ access = "read", path = "../packages/allocation/fixtures" }]
 remappings = [

@@ -5,10 +5,13 @@ import {Test} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Reachpot} from "../src/Reachpot.sol";
 import {MockAsset} from "./utils/Mocks.sol";
+import {CampaignView} from "./utils/CampaignView.sol";
 
 /// @notice Runs the golden fixtures produced by `@reachpot/allocation` (TS) through the contract: the TS allocation,
 /// root and proofs must be accepted on-chain and pay out exactly, with the leftover refundable to the brand.
 contract GoldenTest is Test {
+    using CampaignView for Reachpot;
+
     address oracle = makeAddr("oracle");
     address guardian = makeAddr("guardian");
     address brand = makeAddr("brand");
@@ -72,7 +75,7 @@ contract GoldenTest is Test {
         internal
         returns (Reachpot rp, MockAsset token, uint256 id)
     {
-        rp = new Reachpot(address(this), oracle, guardian, 1 hours, 10 minutes, 7 days, 30 days);
+        rp = new Reachpot(oracle, guardian, 1 hours, 10 minutes, 7 days, 30 days);
         token = new MockAsset();
         token.mint(brand, f.pool);
         vm.startPrank(brand);
@@ -108,7 +111,7 @@ contract GoldenTest is Test {
             assertLe(ps[i].amount, f.cap, "cap respected");
             assertEq(token.balanceOf(ps[i].account), ps[i].amount);
         }
-        assertEq(rp.getCampaign(id).claimed, f.total);
+        assertEq(rp.get(id).claimed, f.total);
         assertEq(rp.refundable(id), f.leftover);
     }
 }

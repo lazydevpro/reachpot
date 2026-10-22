@@ -5,7 +5,7 @@ import { cryptoWaitReady } from '@polkadot/util-crypto';
 import type { ApiPromise } from '@polkadot/api';
 import { createPublicClient, createWalletClient, http, type Address, type Hex } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { CampaignStatus, evmChain, reachpotAbi } from '@reachpot/core';
+import { CampaignStatus, campaignFromTuple, evmChain, reachpotAbi } from '@reachpot/core';
 import { connectNative } from '@reachpot/core/native';
 import { deployment, nativeAdminUri, network, oracleKey } from './env';
 
@@ -62,11 +62,12 @@ const ZERO = `0x${'0'.repeat(64)}` as Hex;
 
 export async function readCampaign(id: number): Promise<OnchainCampaign | null> {
   const address = deployment().reachpot.address;
-  const [c, status, refundable] = await Promise.all([
-    publicClient.readContract({ address, abi: reachpotAbi, functionName: 'getCampaign', args: [BigInt(id)] }),
+  const [tuple, status, refundable] = await Promise.all([
+    publicClient.readContract({ address, abi: reachpotAbi, functionName: 'campaigns', args: [BigInt(id)] }),
     publicClient.readContract({ address, abi: reachpotAbi, functionName: 'status', args: [BigInt(id)] }),
     publicClient.readContract({ address, abi: reachpotAbi, functionName: 'refundable', args: [BigInt(id)] }),
   ]);
+  const c = campaignFromTuple(tuple);
   if (c.brand === '0x0000000000000000000000000000000000000000') return null;
   return {
     brand: c.brand,

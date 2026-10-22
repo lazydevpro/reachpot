@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { CheckCircle2, Database, LoaderCircle, ShieldCheck, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import type { Hex } from 'viem';
-import { reachpotAbi, explorerBlockUrl } from '@reachpot/core';
+import { campaignFromTuple, reachpotAbi, explorerBlockUrl } from '@reachpot/core';
 import { snapshotHash, verifySnapshot, type Snapshot } from '@reachpot/allocation';
 import { Copyable } from '@/components/common/bits';
 import { Button } from '@/components/ui/button';
@@ -32,7 +32,7 @@ export function VerifyPanel({ c, d }: { c: CampaignDetail; d: PublicDeployment }
       setChecks([...out]);
     };
     try {
-      const onchain = await publicClient.readContract({ address: d.reachpot, abi: reachpotAbi, functionName: 'getCampaign', args: [BigInt(c.id)] });
+      const onchain = campaignFromTuple(await publicClient.readContract({ address: d.reachpot, abi: reachpotAbi, functionName: 'campaigns', args: [BigInt(c.id)] }));
       push({ label: 'Read campaign from Reachpot.sol', ok: true, detail: `root ${onchain.root.slice(0, 12)}… · snapshot at #${onchain.snapshotBlock}-${onchain.snapshotIndex}` });
 
       const api = await getNativeApi();
