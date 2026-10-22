@@ -36,7 +36,7 @@ function Inner({ children, chevron, loading, icon }: CommonProps & { children: R
   return (
     <>
       {loading ? <LoaderCircle className="size-4 animate-spin" aria-hidden /> : icon}
-      <span>{children}</span>
+      <span className="inline-flex items-center gap-1.5">{children}</span>
       {chevron && (
         <ChevronRight className="-mr-1 size-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" aria-hidden />
       )}

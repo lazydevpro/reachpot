@@ -2,7 +2,7 @@
 
 // Brand wallet (EVM side of Portaldot via Revive): an injected wallet (MetaMask, Talisman, SubWallet) or, on the
 // local chain only, the well-known dev accounts as in-browser signers.
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { createPublicClient, createWalletClient, custom, http, type Address, type EIP1193Provider, type WalletClient } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { LOCAL_DEV, evmChain } from '@reachpot/core';
@@ -37,7 +37,11 @@ const STORAGE = 'reachpot.evm';
 export function EvmWalletProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<Pick<EvmWallet, 'address' | 'walletClient' | 'kind' | 'label'>>({});
   const [connecting, setConnecting] = useState(false);
-  const [hasInjected, setHasInjected] = useState(false);
+  const hasInjected = useSyncExternalStore(
+    () => () => undefined,
+    () => Boolean(window.ethereum),
+    () => false,
+  );
 
   const connectDev = useCallback((index: number) => {
     const dev = DEV_BRANDS[index];
@@ -71,10 +75,10 @@ export function EvmWalletProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(STORAGE);
   }, []);
 
+  // Restore the last session after mount (deferred so it never sets state during the effect itself).
   useEffect(() => {
-    setHasInjected(Boolean(window.ethereum));
     const saved = localStorage.getItem(STORAGE);
-    if (saved?.startsWith('dev:')) connectDev(Number(saved.slice(4)));
+    if (saved?.startsWith('dev:')) queueMicrotask(() => connectDev(Number(saved.slice(4))));
     else if (saved === 'injected' && window.ethereum) {
       window.ethereum
         .request({ method: 'eth_accounts' })

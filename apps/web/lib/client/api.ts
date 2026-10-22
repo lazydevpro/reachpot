@@ -18,29 +18,22 @@ export async function apiPost<T>(path: string, json: unknown): Promise<T> {
 
 /** Fetch + optional polling. Keeps the last good data while refreshing. */
 export function usePoll<T>(path: string | null, intervalMs = 0) {
-  const [data, setData] = useState<T | undefined>();
-  const [error, setError] = useState<string | undefined>();
-  const [loading, setLoading] = useState(Boolean(path));
+  // Results are keyed by path, so switching paths never shows the previous path's data.
+  const [state, setState] = useState<{ path: string | null; data?: T; error?: string }>({ path: null });
   const alive = useRef(true);
 
   const refresh = useCallback(async () => {
     if (!path) return;
     try {
       const d = await apiGet<T>(path);
-      if (alive.current) {
-        setData(d);
-        setError(undefined);
-      }
+      if (alive.current) setState({ path, data: d });
     } catch (e) {
-      if (alive.current) setError((e as Error).message);
-    } finally {
-      if (alive.current) setLoading(false);
+      if (alive.current) setState((s) => ({ path, data: s.path === path ? s.data : undefined, error: (e as Error).message }));
     }
   }, [path]);
 
   useEffect(() => {
     alive.current = true;
-    setLoading(Boolean(path));
     refresh();
     if (!path || !intervalMs) return () => void (alive.current = false);
     const t = setInterval(refresh, intervalMs);
@@ -50,5 +43,6 @@ export function usePoll<T>(path: string | null, intervalMs = 0) {
     };
   }, [path, intervalMs, refresh]);
 
-  return { data, error, loading, refresh };
+  const current = state.path === path ? state : { path, data: undefined, error: undefined };
+  return { data: current.data, error: current.error, loading: Boolean(path) && current.data === undefined && current.error === undefined, refresh };
 }

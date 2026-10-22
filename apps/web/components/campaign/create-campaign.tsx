@@ -42,6 +42,7 @@ export function CreateCampaign() {
   const [balance, setBalance] = useState<bigint | null>(null);
 
   const asset = deployment?.assets[assetIdx];
+  const shownBalance = wallet.address ? balance : null;
   const parsed = useMemo(() => {
     if (!asset) return null;
     try {
@@ -52,7 +53,7 @@ export function CreateCampaign() {
   }, [asset, pool, cap, minViews]);
 
   useEffect(() => {
-    if (!asset || !wallet.address) return setBalance(null);
+    if (!asset || !wallet.address) return;
     publicClient.readContract({ address: asset.precompile, abi: erc20Abi, functionName: 'balanceOf', args: [wallet.address] }).then(setBalance).catch(() => setBalance(null));
   }, [asset, wallet.address, step]);
 
@@ -60,7 +61,7 @@ export function CreateCampaign() {
     brandName: brandName.trim() ? undefined : 'Required',
     title: title.trim().length >= 3 ? undefined : 'At least 3 characters',
     brief: brief.trim().length >= 10 ? undefined : 'Tell creators what to post (10+ characters)',
-    pool: !parsed ? 'Enter an amount' : parsed.pool <= 0n ? 'Must be more than 0' : balance !== null && parsed.pool > balance ? 'More than your balance' : undefined,
+    pool: !parsed ? 'Enter an amount' : parsed.pool <= 0n ? 'Must be more than 0' : shownBalance !== null && parsed.pool > shownBalance ? 'More than your balance' : undefined,
     cap: !parsed ? 'Enter an amount' : parsed.cap <= 0n ? 'Must be more than 0' : undefined,
   };
   const valid = Object.values(errors).every((e) => !e);
@@ -150,7 +151,7 @@ export function CreateCampaign() {
             <Field
               label="Pot"
               error={pool ? errors.pool : undefined}
-              hint={balance !== null && asset ? <>Balance <Amount value={balance} decimals={asset.decimals} symbol={asset.symbol} /></> : 'Connect a wallet to see your balance'}
+              hint={shownBalance !== null && asset ? <>Balance <Amount value={shownBalance} decimals={asset.decimals} symbol={asset.symbol} /></> : 'Connect a wallet to see your balance'}
             >
               <Input inputMode="decimal" value={pool} onChange={(e) => setPool(e.target.value)} />
             </Field>

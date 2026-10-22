@@ -103,8 +103,11 @@ export function NativeWalletProvider({ children }: { children: ReactNode }) {
     const saved = localStorage.getItem(STORAGE);
     if (!saved) return;
     const [kind, address] = saved.split(':');
-    const restore = kind === 'dev' ? connectDev() : connectExtension();
-    restore.then(() => address && setSelected(address)).catch(() => undefined);
+    // Deferred so the restore never sets state synchronously inside this effect.
+    Promise.resolve()
+      .then(() => (kind === 'dev' ? connectDev() : connectExtension()))
+      .then(() => address && setSelected(address))
+      .catch(() => undefined);
   }, [connectDev, connectExtension]);
 
   const account = accounts.find((a) => a.address === selected);

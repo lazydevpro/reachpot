@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import { erc20Abi, type Address, type Hex } from 'viem';
-import { assetIdFromPrecompile, reachpotAbi } from '@reachpot/core';
+import { assetIdFromPrecompile, fmtUnits, reachpotAbi } from '@reachpot/core';
 import { rulesHash, type CampaignDetail, type CampaignRules, type CampaignSummary, type SubmissionView } from '@/lib/shared/protocol';
 import { logActivity } from './activity';
 import { nativeApi, publicClient, readCampaign, isZeroHash, type OnchainCampaign } from './chain';
@@ -63,7 +63,7 @@ export async function registerCampaign(input: { campaignId: number; createTx: He
       createTx: input.createTx,
     })
     .onConflictDoNothing();
-  await logActivity(input.campaignId, 'created', `${input.rules.brandName} locked ${oc.pool} base units of ${t.symbol}`, input.createTx);
+  await logActivity(input.campaignId, 'created', `${input.rules.brandName} locked ${fmtUnits(oc.pool, t.decimals)} ${t.symbol} in escrow`, input.createTx);
   return { ok: true };
 }
 
