@@ -1,0 +1,45 @@
+# Runs the Reachpot keeper against the deployed app: snapshot → root → payouts → badges.
+# Vercel's free plan only allows daily crons, so GitHub Actions drives it instead. Each run ticks ~once a minute
+# for ~5 minutes and the schedule starts a new run every 5 minutes, giving close to 1-minute cadence.
+# Repository secrets: KEEPER_URL (e.g. https://reachpot.vercel.app) and KEEPER_SECRET (same value as on Vercel).
+name: Keeper
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    inputs:
+      ticks:
+        description: Number of ticks (one per minute)
+        default: '5'
+
+concurrency:
+  group: keeper
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Tick the keeper
+        env:
+          KEEPER_URL: ${{ secrets.KEEPER_URL }}
+          KEEPER_SECRET: ${{ secrets.KEEPER_SECRET }}
+          TICKS: ${{ github.event.inputs.ticks || '5' }}
+        run: |
+          if [ -z "$KEEPER_URL" ] || [ -z "$KEEPER_SECRET" ]; then
+            echo "KEEPER_URL / KEEPER_SECRET secrets are not set yet; nothing to do."
+            exit 0
+          fi
+          failures=0
+          for i in $(seq 1 "$TICKS"); do
+            echo "::group::tick $i"
+            if ! curl -fsS --max-time 290 -X POST "$KEEPER_URL/api/keeper/tick" -H "x-keeper-secret: $KEEPER_SECRET"; then
+              failures=$((failures + 1))
+            fi
+            echo
+            echo "::endgroup::"
+            [ "$i" -lt "$TICKS" ] && sleep 55
+          done
+          [ "$failures" -lt "$TICKS" ] || { echo "every tick failed"; exit 1; }

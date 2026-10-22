@@ -8,7 +8,8 @@ const g = globalThis as unknown as { __reachpotLoop?: ReturnType<typeof setInter
  * the current code (instrumentation's module graph is not hot-reloaded in dev).
  */
 export function startKeeperLoop() {
-  if (g.__reachpotLoop || process.env.KEEPER_AUTORUN === '0' || !serverEnv.keeperSecret) return;
+  // Serverless (Vercel) has no long-lived process: an external scheduler calls the tick route instead.
+  if (g.__reachpotLoop || process.env.VERCEL || process.env.KEEPER_AUTORUN === '0' || !serverEnv.keeperSecret) return;
   const url = `${process.env.KEEPER_URL ?? `http://127.0.0.1:${process.env.PORT ?? 3000}`}/api/keeper/tick`;
   let lastError = '';
   g.__reachpotLoop = setInterval(async () => {

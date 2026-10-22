@@ -22,12 +22,10 @@ Check-in: **2026-10-24 12:00 UTC** · Final / code freeze: **2026-11-06 04:00 UT
 
 ## Next (final, by Nov 6)
 - [ ] Real YouTube mode on testnet with a real Short (needs `YOUTUBE_API_KEY`) #web
-- [ ] Hosted demo on Cloudflare (after testnet deploy; needs Workers Paid — Free's 10 ms CPU can't fit @polkadot/api init, measured ~725 ms): #infra
-  - [ ] Spike: @polkadot/api in workerd (`wrangler dev`): WebSocket client, asm.js crypto fallback (`@polkadot/wasm-crypto-init/both` alias), 128 MB memory
-  - [ ] Web on vinext (turn off `cacheComponents`), deployment JSON bundled, secrets via `wrangler secret put`
-  - [ ] DB: drizzle pg-core/PGlite → D1 (sqlite-core) + rewrite raw SQL fragments
-  - [ ] Keeper: cron Worker (`* * * * *`) → `/api/keeper/tick` via service binding; `KEEPER_AUTORUN=0`
-  - [ ] User: `npx wrangler login` + Workers Paid
+- [x] Hosting prep: Postgres adapter (Neon via DATABASE_URL, verified with the full e2e over the wire protocol), bundled testnet deployment, serverless guards, CI + keeper GitHub Actions, [docs/deploy.md](docs/deploy.md) #infra
+- [ ] User: import repo on Vercel (root `apps/web`), add Neon, set env vars, deploy; set `KEEPER_URL` / `KEEPER_SECRET` GitHub secrets #infra
+- [ ] `pnpm e2e --network testnet --web https://<app>.vercel.app` once more tPOT arrives (~60) #deploy
+- [ ] (Alternative host) Cloudflare Workers Paid: vinext + D1 + cron Worker — only if moving off Vercel #infra
 - [ ] Invariant test with handler (AC4 extra) #contracts
 - [ ] Guardian UI (cancel root) #web
 - [ ] Stretch: MetaTx-sponsored creator actions; sponsor the mapAccount deposit for first-time creators #native

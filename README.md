@@ -87,6 +87,12 @@ On the local chain the app offers **pre-funded dev wallets**, so no browser exte
 "Demo creator accounts" for creators. Views are simulated locally; each Short has a "+25K views (demo)" button.
 `pnpm chain:down` stops the chain.
 
+## Deploy
+
+The web app runs on **Vercel**, with **Neon Postgres** for data and **GitHub Actions** ticking the keeper about once a
+minute. CI runs the contract, allocation, typecheck and build checks on every push. Step by step:
+**[docs/deploy.md](docs/deploy.md)**.
+
 ## Testnet
 
 Portaldot V3 testnet: `wss://test-node-v3.portaldot.dev` · EVM `https://test-evm-rpc-v3.portaldot.dev` (chain id

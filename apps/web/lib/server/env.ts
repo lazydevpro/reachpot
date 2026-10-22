@@ -3,7 +3,7 @@ import { readFileSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { config as loadEnv } from 'dotenv';
 import type { Hex } from 'viem';
-import { LOCAL_DEV, getNetwork, type Deployment } from '@reachpot/core';
+import { BUNDLED_DEPLOYMENTS, LOCAL_DEV, getNetwork, type Deployment } from '@reachpot/core';
 import type { PublicDeployment } from '@/lib/shared/protocol';
 
 /** Repo root (the app runs from apps/web). Root .env holds the testnet keys shared with scripts/. */
@@ -42,13 +42,18 @@ export function nativeAdminUri(): string {
 
 let cached: { mtimeMs: number; deployment: Deployment } | undefined;
 
-/** Reads deployments/<network>.json (re-read when the file changes, e.g. after `pnpm deploy:local`). */
+/**
+ * Reads deployments/<network>.json from disk when present (re-read when it changes, e.g. after `pnpm deploy:local`),
+ * otherwise falls back to the copy bundled at build time (serverless hosts such as Vercel have no repo checkout).
+ */
 export function deployment(): Deployment {
   const path = resolve(REPO_ROOT, 'deployments', `${network.name}.json`);
   let mtimeMs: number;
   try {
     mtimeMs = statSync(path).mtimeMs;
   } catch {
+    const bundled = BUNDLED_DEPLOYMENTS[network.name];
+    if (bundled) return bundled;
     throw new Error(`No deployment for ${network.name}. Run \`pnpm deploy:${network.name}\` first.`);
   }
   if (!cached || cached.mtimeMs !== mtimeMs) cached = { mtimeMs, deployment: JSON.parse(readFileSync(path, 'utf8')) };

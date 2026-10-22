@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: foundry-rs/foundry-toolchain@v1
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Contracts (unit, fuzz, golden fixtures)
+        working-directory: contracts
+        run: forge test
+
+      - name: Allocation tests
+        run: pnpm --filter @reachpot/allocation test
+
+      - name: Typecheck packages and scripts
+        run: |
+          pnpm --filter @reachpot/core typecheck
+          pnpm --filter @reachpot/allocation typecheck
+          pnpm --filter @reachpot/scripts typecheck
+
+      - name: Web lint + production build (testnet)
+        env:
+          NEXT_PUBLIC_NETWORK: testnet
+          KEEPER_AUTORUN: '0'
+          NEXT_TELEMETRY_DISABLED: '1'
+        run: |
+          pnpm --filter @reachpot/web lint
+          pnpm --filter @reachpot/web build

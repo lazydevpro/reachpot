@@ -6,6 +6,12 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@reachpot/web", "dev"],
       "port": 3000
+    },
+    {
+      "name": "web-postgres",
+      "runtimeExecutable": "env",
+      "runtimeArgs": ["DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5433/postgres", "PG_POOL_MAX=1", "pnpm", "--filter", "@reachpot/web", "dev"],
+      "port": 3000
     }
   ]
 }

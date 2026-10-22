@@ -117,7 +117,7 @@ for (const [i, c] of creators.entries()) {
   const sub = await api<{ status: string; payoutH160: string }>('/api/submissions', {
     json: { campaignId: id, videoUrl: `https://youtube.com/shorts/${videoId}`, creator: c.address, signature },
   });
-  await api('/api/dev/views', { json: { campaignId: id, videoId, views: plannedViews[i].toString() } });
+  await api('/api/dev/views', { json: { campaignId: id, videoId, views: plannedViews[i].toString() }, headers: { 'x-keeper-secret': KEEPER_SECRET } });
   ok(`creator ${i + 1} submits a Short (signed)`, `${videoId} · ${sub.status} · payout H160 ${sub.payoutH160} · ${plannedViews[i].toLocaleString()} views`);
 }
 

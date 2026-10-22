@@ -1,9 +1,10 @@
 // The oracle/keeper: refreshes views, publishes the snapshot to TransactionStorage, posts the payout root, pushes
 // payouts, and keeps creator badges up to date. Runs every few seconds (instrumentation.ts) or via POST /api/keeper/tick.
-import { and, eq, isNull, sql } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import { bytesToHex, parseEventLogs, type Address, type Hex } from 'viem';
 import { CampaignStatus, fmtUnits, reachpotAbi } from '@reachpot/core';
 import { accountOfH160, sendNative } from '@reachpot/core/native';
+import { blake2AsU8a, decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import { EMPTY_ROOT, buildSnapshot, buildTree, eligibleTotals, serializeSnapshot, snapshotHash, type Snapshot } from '@reachpot/allocation';
 import { logActivity } from './activity';
 import { nativeAdmin, nativeApi, oracleWallet, publicClient, readCampaign, isZeroHash, type OnchainCampaign } from './chain';
@@ -307,16 +308,22 @@ async function updateBadges(row: CampaignRow) {
   const admin = await nativeAdmin();
   const calls = [];
   const minted: { creator: string; item: number }[] = [];
-  let [{ next }] = await d.select({ next: sql<number>`coalesce(max(${schema.badges.item}) + 1, 0)` }).from(schema.badges).where(eq(schema.badges.collection, collection));
-  next = Number(next);
+  const adopted: { creator: string; item: number }[] = [];
+  const reserved = new Set<number>();
 
   for (const creator of creators) {
     const [badge] = await d.select().from(schema.badges).where(and(eq(schema.badges.collection, collection), eq(schema.badges.creator, creator)));
     let item = badge?.item;
     if (item === undefined) {
-      item = next++;
-      calls.push(api.tx.nfts.mint(collection, item, creator, null));
-      minted.push({ creator, item });
+      // The chain is authoritative: reuse the creator's existing badge, otherwise mint at their deterministic id.
+      const found = await resolveBadgeItem(api, collection, creator, reserved);
+      item = found.item;
+      reserved.add(item);
+      if (found.exists) adopted.push({ creator, item });
+      else {
+        calls.push(api.tx.nfts.mint(collection, item, creator, null));
+        minted.push({ creator, item });
+      }
     }
     // Lifetime stats across every campaign this creator was paid in.
     const mySubs = await d.select().from(schema.submissions).where(and(eq(schema.submissions.contract, row.contract), eq(schema.submissions.creator, creator)));
@@ -335,7 +342,27 @@ async function updateBadges(row: CampaignRow) {
   }
 
   const r = await sendNative(api, api.tx.utility.batchAll(calls), admin);
-  for (const m of minted) await d.insert(schema.badges).values({ collection, creator: m.creator, item: m.item, mintTx: r.txHash }).onConflictDoNothing();
+  for (const m of [...minted, ...adopted]) await d.insert(schema.badges).values({ collection, creator: m.creator, item: m.item, mintTx: r.txHash }).onConflictDoNothing();
   for (const creator of creators) await d.update(schema.badges).set({ updatedTx: r.txHash }).where(and(eq(schema.badges.collection, collection), eq(schema.badges.creator, creator)));
   await logActivity(row.campaignId, 'badges', `Creator badges: ${minted.length} minted, ${creators.length} updated (soulbound NFTs)`, r.txHash);
+}
+
+/**
+ * Badge item id for a creator: the first 4 bytes of blake2-256(public key), probing forward past ids owned by someone
+ * else. Deterministic, so anyone can find a creator's badge on-chain without our database, and a fresh database can
+ * never collide with badges that already exist.
+ */
+async function resolveBadgeItem(api: Awaited<ReturnType<typeof nativeApi>>, collection: number, creator: string, reserved: Set<number>) {
+  // Already holds a badge in this collection (e.g. minted before a database reset)? Adopt it — one badge per creator.
+  const owned = await api.query.nfts.account.keys(creator, collection);
+  if (owned.length > 0) return { item: owned[0].args[2].toNumber(), exists: true };
+  const seed = blake2AsU8a(decodeAddress(creator), 256);
+  let item = new DataView(seed.buffer, seed.byteOffset, 4).getUint32(0) & 0x7fffffff;
+  for (let i = 0; i < 32; i++, item = (item + 1) >>> 0) {
+    if (reserved.has(item)) continue;
+    const existing = await api.query.nfts.item(collection, item);
+    if (existing.isNone) return { item, exists: false };
+    if (encodeAddress(existing.unwrap().owner, 42) === encodeAddress(decodeAddress(creator), 42)) return { item, exists: true };
+  }
+  throw new Error(`no free badge id near ${item} for ${creator}`);
 }

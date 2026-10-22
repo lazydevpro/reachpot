@@ -1,4 +1,4 @@
-import { boolean, integer, pgTable, serial, text, timestamp, uniqueIndex, index } from 'drizzle-orm/pg-core';
+import { bigint, boolean, integer, pgTable, serial, text, timestamp, uniqueIndex, index } from 'drizzle-orm/pg-core';
 
 /** Off-chain campaign metadata, bound to the on-chain campaign by `rulesHash`. Keyed by (contract, campaignId). */
 export const campaigns = pgTable(
@@ -85,7 +85,8 @@ export const badges = pgTable(
   {
     collection: integer('collection').notNull(),
     creator: text('creator').notNull(),
-    item: integer('item').notNull(),
+    /** pallet-nfts item ids are u32 — wider than Postgres integer. */
+    item: bigint('item', { mode: 'number' }).notNull(),
     mintTx: text('mint_tx').notNull(),
     updatedTx: text('updated_tx'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -139,9 +140,10 @@ CREATE TABLE IF NOT EXISTS payouts (
 CREATE INDEX IF NOT EXISTS payouts_campaign ON payouts (contract, campaign_id);
 CREATE INDEX IF NOT EXISTS payouts_account ON payouts (account);
 CREATE TABLE IF NOT EXISTS badges (
-  collection integer NOT NULL, creator text NOT NULL, item integer NOT NULL, mint_tx text NOT NULL, updated_tx text,
+  collection integer NOT NULL, creator text NOT NULL, item bigint NOT NULL, mint_tx text NOT NULL, updated_tx text,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE badges ALTER COLUMN item TYPE bigint;
 CREATE UNIQUE INDEX IF NOT EXISTS badges_pk ON badges (collection, creator);
 CREATE TABLE IF NOT EXISTS activity (
   id serial PRIMARY KEY, contract text NOT NULL, campaign_id integer NOT NULL, kind text NOT NULL, message text NOT NULL,

@@ -3,6 +3,9 @@ import { serverEnv } from '@/lib/server/env';
 import { handle } from '@/lib/server/http';
 import { keeperTick } from '@/lib/server/keeper';
 
+/** A pass waits for several blocks on testnet (snapshot, root, payouts, badges); allow up to 5 minutes. */
+export const maxDuration = 300;
+
 /** Runs one keeper pass. Protected by KEEPER_SECRET (header `x-keeper-secret`); used by cron and the e2e script. */
 export async function POST(req: Request) {
   return handle(async () => {
