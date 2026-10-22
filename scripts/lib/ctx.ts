@@ -77,6 +77,27 @@ export async function localCreators(): Promise<KeyringPair[]> {
   return LOCAL_DEV.native.creators.map((u) => keyring().addFromUri(u));
 }
 
+/**
+ * Demo creators for scripted runs: local dev accounts, or on testnet throwaway sr25519 keys kept in .env
+ * (CREATOR_MNEMONIC_1..n, generated on first use, never printed).
+ */
+export async function demoCreators(n: number): Promise<KeyringPair[]> {
+  if (net.name === 'local') return (await localCreators()).slice(0, n);
+  await cryptoWaitReady();
+  const { mnemonicGenerate } = await import('@polkadot/util-crypto');
+  const { appendFileSync } = await import('node:fs');
+  const out: KeyringPair[] = [];
+  for (let i = 1; i <= n; i++) {
+    const name = `CREATOR_MNEMONIC_${i}`;
+    if (!process.env[name]) {
+      process.env[name] = mnemonicGenerate(12);
+      appendFileSync(resolve(ROOT, '.env'), `\n# Throwaway TESTNET demo creator ${i}. Never use on mainnet.\n${name}="${process.env[name]}"\n`, { mode: 0o600 });
+    }
+    out.push(keyring().addFromUri(process.env[name]!));
+  }
+  return out;
+}
+
 export async function native() {
   const api = await connectNative(net.ws);
   await api.isReady;

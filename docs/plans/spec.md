@@ -77,15 +77,14 @@ on-chain. Rejecting a creator saves the brand nothing, because the share goes to
 
 ## Risks / open questions
 
-1. **Precompile write path.** Only reads (`totalSupply`, `decimals`) are verified. `approve` from an EOA and
-   `transferFrom`/`transfer` from a contract must be proven first (spike).
-2. **Recipients without a native balance.** `Assets` tokens need the recipient account to exist (native ED 0.1 tPOT)
-   unless the asset is "sufficient", and holder accounts carry a 1 tPOT deposit. Fresh creator wallets may hit
-   `NoProvider`. Options: send ED with the payout, have the keeper `touch_other`, or pay in native tPOT.
-   **Decide after the spike.**
-3. **Creator cash-out signing.** Creator funds sit in their H160's fallback account. A DEX swap is a native extrinsic,
-   so it needs either a native wallet (e.g. Talisman) or `Revive.ethSubstrateCall` / `dispatchAsFallbackAccount`
-   from MetaMask. Needs verification.
+1. ~~**Precompile write path.**~~ **Resolved (spike, local chain with the same pallets):** `approve` from an EOA,
+   `transferFrom` from a contract and payouts to mapped native accounts all work ([evidence](../spike-precompile-local.md)).
+2. ~~**Recipients without a native balance.**~~ **Resolved:** confirmed failure mode (`Token.CannotCreate`). The keeper
+   sponsors the existential deposit for recipients with no native balance, and `payoutMany` skips and retries failures.
+3. ~~**Creator cash-out signing.**~~ **Resolved by design:** creators use a native Portaldot wallet and map it once
+   (`revive.mapAccount`). Payouts to their H160 land in their native account, and DEX swaps are signed natively.
+   **Trade-off:** mapping reserves a refundable 52-byte + 1-item deposit, which is **about 3.3 tPOT on testnet**.
+   Options to revisit: sponsor it for first-time creators, or support MetaMask-only creators via `ethSubstrateCall`.
 4. **Snapshot data policy.** Retention is node-dependent: archive nodes may keep block bodies, and the stored data,
    indefinitely. YouTube API data policies limit storing statistics, so the on-chain snapshot should carry only what
    verification needs (per-creator eligible totals and allocations, not raw per-video statistics). Do a policy review

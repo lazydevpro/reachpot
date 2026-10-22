@@ -4,6 +4,8 @@
 //   → keeper pays every creator + mints soulbound badges → anyone verifies the snapshot from chain
 //   → a creator cashes out on the native DEX → brand reclaims any leftover.
 // Usage: pnpm e2e [--network local|testnet] [--web http://localhost:3000]
+// Testnet: run the web app with NEXT_PUBLIC_NETWORK=testnet VIEWS_SOURCE=mock ENABLE_DEV_TOOLS=1 (scripted Shorts use
+// simulated views); demo creators are throwaway keys funded from the native admin (mapping reserves ~3.3 tPOT each).
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { stringToU8a, u8aToHex } from '@polkadot/util';
@@ -11,7 +13,7 @@ import { erc20Abi, keccak256, parseEventLogs, toBytes, type Address, type Hex } 
 import { CampaignStatus, STATUS_LABEL, fmtUnits, reachpotAbi } from '@reachpot/core';
 import { assetBalance, assetKind, freeBalance, isMapped, nativeKind, readStoredData, sendNative } from '@reachpot/core/native';
 import { snapshotHash, verifySnapshot, type Snapshot } from '@reachpot/allocation';
-import { ROOT, arg, evmClients, evmRoles, localCreators, loadDeployment, native, net } from './lib/ctx.js';
+import { ROOT, arg, demoCreators, evmClients, evmRoles, loadDeployment, nativeAdmin, native, net } from './lib/ctx.js';
 
 const WEB = arg('web') ?? process.env.WEB_URL ?? 'http://localhost:3000';
 const KEEPER_SECRET = process.env.KEEPER_SECRET ?? 'local-dev';
@@ -88,9 +90,20 @@ await api('/api/campaigns', { json: { campaignId: id, createTx, rules } });
 ok('campaign rules registered (hash-bound to rulesHash)', rulesHash);
 
 // ------------------------------------------------------- 2. creators submit
-if (net.name !== 'local') throw new Error('creator steps use local dev accounts; on testnet use the web UI for creators');
-const creators = (await localCreators()).slice(0, 4);
-const plannedViews = [142_000n, 42_500n, 13_100n, 60n]; // last one is below minViews → excluded
+const plannedViews = net.name === 'local' ? [142_000n, 42_500n, 13_100n, 60n] : [42_500n, 13_100n]; // 60 < minViews → excluded
+const creators = await demoCreators(plannedViews.length);
+if (net.name !== 'local') {
+  // Each creator needs native balance for the revive.mapAccount deposit (52 bytes + 1 item) plus fees.
+  const admin = await nativeAdmin();
+  const need = chain.consts.revive.depositPerItem.toBigInt() + chain.consts.revive.depositPerByte.toBigInt() * 60n + units.existentialDeposit * 5n;
+  for (const c of creators) {
+    const free = await freeBalance(chain, c.address);
+    if (free < need) {
+      const r = await sendNative(chain, chain.tx.balances.transferKeepAlive(c.address, need - free), admin);
+      ok('fund demo creator (mapping deposit + fees)', `${c.address} ← ${fmtUnits(need - free, units.decimals)} ${dep.native.symbol}`, r.txHash);
+    }
+  }
+}
 const videoIds: string[] = [];
 for (const [i, c] of creators.entries()) {
   if (!(await isMapped(chain, c.address))) {
