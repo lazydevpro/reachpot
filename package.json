@@ -1,0 +1,15 @@
+{
+  "name": "reachpot",
+  "private": true,
+  "description": "Pro-rata creator campaigns on Portaldot, funded in any native asset",
+  "license": "MIT",
+  "packageManager": "pnpm@8.6.12",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build:contracts": "cd contracts && forge build",
+    "test:contracts": "cd contracts && forge test",
+    "spike": "pnpm --filter @reachpot/scripts spike"
+  }
+}
