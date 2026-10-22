@@ -1,0 +1,23 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# deps / build
+node_modules/
+.pnpm-store/
+dist/
+.next/
+out/
+contracts/out/
+contracts/cache/
+contracts/broadcast/*/31337/
+coverage/
+
+# misc
+.DS_Store
+*.log
+.vercel
+
+# script run state
+scripts/out/
