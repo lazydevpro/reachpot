@@ -7,6 +7,8 @@ solc_version = "0.8.28"
 evm_version = "shanghai"
 optimizer = true
 optimizer_runs = 200
+# Golden fixtures shared with the TS allocation package.
+fs_permissions = [{ access = "read", path = "../packages/allocation/fixtures" }]
 remappings = [
   "forge-std/=lib/forge-std/src/",
   "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",

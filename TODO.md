@@ -9,11 +9,11 @@ Check-in: **2026-10-24 12:00 UTC** · Final / code freeze: **2026-11-06 04:00 UT
 - [x] `Reachpot.sol` + 18 Foundry tests incl. fuzz (AC2–AC5) #contracts
 - [ ] Fund native admin `5EqSmfgK1r4RCvxFaikQyH8j8Xktxs3Ay7SDYzURJWQqDUd5` with ~30–40 tPOT (user) #infra
 - [~] Phase 0 spike: `pnpm spike` — precompile approve/transferFrom/transfer + recipients with no native balance #contracts #risk
-- [ ] Create public GitHub repo `reachpot` + first push (user OK needed) #infra
+- [x] Public GitHub repo https://github.com/lazydevpro/reachpot #infra
 
 ## Next (check-in)
 - [ ] Invariant test with handler (AC4) #contracts
-- [ ] `packages/allocation`: water-filling + Merkle + golden fixtures (AC7) #allocation
+- [x] `packages/allocation`: water-filling + Merkle + snapshot format + `verify` CLI + golden fixtures shared with Foundry (AC7) #allocation
 - [ ] TransactionStorage snapshot + `verify` CLI (AC6) #native
 - [ ] Deploy `Reachpot` + `scripts/e2e.ts` on testnet → `docs/deployments.md` (AC1) #scripts
 - [ ] Minimal web: campaign, leaderboard, receipts #web

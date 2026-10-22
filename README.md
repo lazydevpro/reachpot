@@ -58,9 +58,10 @@ flowchart LR
 ## Repository
 
 ```
-contracts/      Foundry: Reachpot.sol + tests (unit, fuzz)
-scripts/        Testnet scripts (viem for EVM, @polkadot/api for native pallets)
-docs/plans/     spec and plan
+contracts/            Foundry: Reachpot.sol + tests (unit, fuzz, golden fixtures)
+packages/allocation/  TS: water-filling split, Merkle tree, snapshot format, `verify` CLI
+scripts/              Testnet scripts (viem for EVM, @polkadot/api for native pallets)
+docs/plans/           spec and plan
 ```
 
 ## Quickstart
@@ -70,7 +71,7 @@ Requirements: Node 22+, pnpm 8+, [Foundry](https://getfoundry.sh).
 ```bash
 git clone --recursive https://github.com/lazydevpro/reachpot && cd reachpot
 pnpm install
-pnpm test:contracts
+pnpm test               # Foundry + allocation tests
 ```
 
 Testnet scripts read `.env`, which holds throwaway testnet keys and is never committed:

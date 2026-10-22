@@ -1,0 +1,16 @@
+{
+  "name": "single-creator",
+  "pool": "250000000",
+  "cap": "100000000",
+  "totalAllocated": "100000000",
+  "leftover": "150000000",
+  "root": "0x9dfbfabccf712e40786d73022151b99cc5e7d26d366a86e71d6145fe35c6d745",
+  "count": 1,
+  "payouts": [
+    {
+      "account": "0x5555555555555555555555555555555555555555",
+      "amount": "100000000",
+      "proof": []
+    }
+  ]
+}

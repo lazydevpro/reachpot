@@ -9,7 +9,10 @@
   },
   "scripts": {
     "build:contracts": "cd contracts && forge build",
+    "test": "pnpm test:contracts && pnpm test:allocation",
     "test:contracts": "cd contracts && forge test",
+    "test:allocation": "pnpm --filter @reachpot/allocation test",
+    "verify": "pnpm --filter @reachpot/allocation verify",
     "spike": "pnpm --filter @reachpot/scripts spike"
   }
 }

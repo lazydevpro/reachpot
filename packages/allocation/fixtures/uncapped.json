@@ -1,0 +1,34 @@
+{
+  "name": "uncapped",
+  "pool": "1000000000",
+  "cap": "1000000000",
+  "totalAllocated": "1000000000",
+  "leftover": "0",
+  "root": "0xe651505ed9b7f517b9389c207785d70045fe3a7fb1f47cd0a116dcb5d8c084c2",
+  "count": 3,
+  "payouts": [
+    {
+      "account": "0x1111111111111111111111111111111111111111",
+      "amount": "100000000",
+      "proof": [
+        "0x504e8458dd86f1a4b0cd7a0a74de453f06d2f0ba1c8ab323fcad6ad04ec4d7f1",
+        "0x6437ad26c05ce86e2110dd777f061094c317e42acf105fc6c80ba840ee984077"
+      ]
+    },
+    {
+      "account": "0x2222222222222222222222222222222222222222",
+      "amount": "200000000",
+      "proof": [
+        "0x06d82ab6a2464aac4dbf0be285792eef0703323e41f982d7daaeda4ebdcac348"
+      ]
+    },
+    {
+      "account": "0x3333333333333333333333333333333333333333",
+      "amount": "700000000",
+      "proof": [
+        "0x16748c219d3b28d4973387bc3fa56258e5b7f75911991af77846fdfb16864797",
+        "0x6437ad26c05ce86e2110dd777f061094c317e42acf105fc6c80ba840ee984077"
+      ]
+    }
+  ]
+}

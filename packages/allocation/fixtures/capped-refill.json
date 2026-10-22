@@ -1,0 +1,34 @@
+{
+  "name": "capped-refill",
+  "pool": "1000000000",
+  "cap": "400000000",
+  "totalAllocated": "1000000000",
+  "leftover": "0",
+  "root": "0x67812e0294f55dc9e8e81aaca969d66a271233269b964c99de23c936301d5d95",
+  "count": 3,
+  "payouts": [
+    {
+      "account": "0x1111111111111111111111111111111111111111",
+      "amount": "200000000",
+      "proof": [
+        "0x57a6d0d98f44830d5f3b8b977f21f0c5bfd4c0823f8bd4c350b1619d9c634cb4",
+        "0x98e2185cf35959d2f5ca798a378d85687bf211168ceb572d1be7b968a6d58b9d"
+      ]
+    },
+    {
+      "account": "0x2222222222222222222222222222222222222222",
+      "amount": "400000000",
+      "proof": [
+        "0x368c4f62bba32aab578362f0acd5bbdae6ccb596114fd7e85cee0f7c93745fb3"
+      ]
+    },
+    {
+      "account": "0x3333333333333333333333333333333333333333",
+      "amount": "400000000",
+      "proof": [
+        "0x6120ef842b8563725a6b75439ac1184dfd1da6ee80cf3e654e81742c6b4afaf5",
+        "0x98e2185cf35959d2f5ca798a378d85687bf211168ceb572d1be7b968a6d58b9d"
+      ]
+    }
+  ]
+}

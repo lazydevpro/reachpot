@@ -1,0 +1,43 @@
+{
+  "name": "all-capped-leftover",
+  "pool": "1000000000",
+  "cap": "100000000",
+  "totalAllocated": "400000000",
+  "leftover": "600000000",
+  "root": "0x3e115ccd95e03c811696b26e77436ab162f7dddffa29b110f484b32c3f31b083",
+  "count": 4,
+  "payouts": [
+    {
+      "account": "0x1111111111111111111111111111111111111111",
+      "amount": "100000000",
+      "proof": [
+        "0xc787cb2c74fdbd3348290caa5b15facfef32cffd20f8aaab5ff5103db5548f0a",
+        "0x77a9d3cb73a5f15360358ecf86790c9e8722b323075d806b8a45a9d33b3ced8a"
+      ]
+    },
+    {
+      "account": "0x2222222222222222222222222222222222222222",
+      "amount": "100000000",
+      "proof": [
+        "0x16748c219d3b28d4973387bc3fa56258e5b7f75911991af77846fdfb16864797",
+        "0x77a9d3cb73a5f15360358ecf86790c9e8722b323075d806b8a45a9d33b3ced8a"
+      ]
+    },
+    {
+      "account": "0x3333333333333333333333333333333333333333",
+      "amount": "100000000",
+      "proof": [
+        "0xdb8211d9b143e6b072c450f49547c018bce200de02c2d2d6db64e0e54f8e6cb1",
+        "0x138e8799fb26ac8acab50f514a126285107e4ca53d53d9fa7846fdbdc532a4a9"
+      ]
+    },
+    {
+      "account": "0x4444444444444444444444444444444444444444",
+      "amount": "100000000",
+      "proof": [
+        "0xcdeb66c603d572c6a58c6ee1c66c7bfd84768b35c030e36bfe81a6dfd5ccaad9",
+        "0x138e8799fb26ac8acab50f514a126285107e4ca53d53d9fa7846fdbdc532a4a9"
+      ]
+    }
+  ]
+}

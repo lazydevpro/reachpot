@@ -1,0 +1,34 @@
+{
+  "name": "rounding-dust",
+  "pool": "1000",
+  "cap": "1000",
+  "totalAllocated": "999",
+  "leftover": "1",
+  "root": "0x6778853679b69af3d094194667e035a6b23fbd56d1f1886f8cd12831cdf5c8be",
+  "count": 3,
+  "payouts": [
+    {
+      "account": "0x1111111111111111111111111111111111111111",
+      "amount": "333",
+      "proof": [
+        "0x9a8f474070c44cfd631faaf212dc48fdc5e4f5ba64bf1e46108b8dc21c2dcf67",
+        "0xd1d32c35f4a0b9d4bc6912c22d327feb406ce94ea2bf20826888d331077da595"
+      ]
+    },
+    {
+      "account": "0x2222222222222222222222222222222222222222",
+      "amount": "333",
+      "proof": [
+        "0xc7dc770be7fe05c9f64262da421ff9725efe88d050d0f82ad2fa603cce33bd2a"
+      ]
+    },
+    {
+      "account": "0x3333333333333333333333333333333333333333",
+      "amount": "333",
+      "proof": [
+        "0x6bcaa2a6e4d4a6dfcbc15ed6acd9e459d4477d48c93f1da01774fb342f3adb63",
+        "0xd1d32c35f4a0b9d4bc6912c22d327feb406ce94ea2bf20826888d331077da595"
+      ]
+    }
+  ]
+}

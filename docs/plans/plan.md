@@ -12,7 +12,7 @@ flowchart LR
   Oracle -- "store(snapshot)" --> TS[(TransactionStorage)]
   Oracle -- "postRoot(root, total, snapshotHash)" --> RP
   Guardian -. "cancelRoot (dispute window)" .-> RP
-  Keeper -- "claimMany" --> RP
+  Keeper -- "payoutMany" --> RP
   RP -- "ERC-20 precompile transfer" --> Assets[(Native Assets)]
   Keeper -- "mint / set_attribute" --> NFT[(Nfts: creator badge)]
   Creator -- "swap payout to tPOT" --> DEX[(AssetConversion)]

@@ -1,0 +1,30 @@
+{
+  "name": "@reachpot/allocation",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Deterministic pro-rata (water-filling) allocation, Merkle tree and snapshot format for Reachpot",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "bin": {
+    "reachpot-verify": "./src/cli.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "fixtures": "tsx src/fixtures.ts",
+    "verify": "tsx src/cli.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@noble/hashes": "^2.4.0",
+    "@openzeppelin/merkle-tree": "^1.0.8",
+    "viem": "^2.57.10"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}
