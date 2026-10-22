@@ -22,7 +22,12 @@ Check-in: **2026-10-24 12:00 UTC** · Final / code freeze: **2026-11-06 04:00 UT
 
 ## Next (final, by Nov 6)
 - [ ] Real YouTube mode on testnet with a real Short (needs `YOUTUBE_API_KEY`) #web
-- [ ] Hosted demo: Postgres (Neon) adapter for the DB + cron for the keeper (PGlite is single-process) #infra
+- [ ] Hosted demo on Cloudflare (after testnet deploy; needs Workers Paid — Free's 10 ms CPU can't fit @polkadot/api init, measured ~725 ms): #infra
+  - [ ] Spike: @polkadot/api in workerd (`wrangler dev`): WebSocket client, asm.js crypto fallback (`@polkadot/wasm-crypto-init/both` alias), 128 MB memory
+  - [ ] Web on vinext (turn off `cacheComponents`), deployment JSON bundled, secrets via `wrangler secret put`
+  - [ ] DB: drizzle pg-core/PGlite → D1 (sqlite-core) + rewrite raw SQL fragments
+  - [ ] Keeper: cron Worker (`* * * * *`) → `/api/keeper/tick` via service binding; `KEEPER_AUTORUN=0`
+  - [ ] User: `npx wrangler login` + Workers Paid
 - [ ] Invariant test with handler (AC4 extra) #contracts
 - [ ] Guardian UI (cancel root) #web
 - [ ] Stretch: MetaTx-sponsored creator actions; sponsor the mapAccount deposit for first-time creators #native
