@@ -1,9 +1,14 @@
 import { blake2b } from '@noble/hashes/blake2.js';
-import { bytesToHex, getAddress, type Address, type Hex } from 'viem';
+import { bytesToHex, getAddress, keccak256, toBytes, type Address, type Hex } from 'viem';
 import { allocate, type CreatorViews } from './allocate';
 import { buildTree } from './tree';
 
 export const SNAPSHOT_SCHEMA = 'reachpot.snapshot/v1';
+
+/** Root posted when no creator is eligible: nothing is payable and the whole pool becomes refundable. */
+export const EMPTY_ROOT: Hex = keccak256(toBytes('reachpot:empty-allocation'));
+
+const rootOf = (allocations: { account: Address; amount: bigint }[]): Hex => (allocations.length === 0 ? EMPTY_ROOT : buildTree(allocations).root);
 
 /**
  * What the oracle publishes to Portaldot `TransactionStorage` before posting a root. It carries only what is needed to
@@ -39,7 +44,7 @@ export interface SnapshotInput {
 
 export function buildSnapshot(input: SnapshotInput): Snapshot {
   const { allocations, totalAllocated } = allocate(input.creators, input.pool, input.capPerCreator);
-  const { root } = buildTree(allocations);
+  const root = rootOf(allocations);
   // Key order is fixed here, so serialization (and therefore the content hash) is canonical.
   return {
     schema: SNAPSHOT_SCHEMA,
@@ -83,7 +88,7 @@ export function verifySnapshot(s: Snapshot, expected?: { root?: Hex; totalAlloca
   const creators = s.creators.map((c) => ({ account: getAddress(c.account), eligibleViews: BigInt(c.eligibleViews) }));
   const pool = BigInt(s.pool);
   const { allocations, totalAllocated } = allocate(creators, pool, BigInt(s.capPerCreator));
-  const { root } = buildTree(allocations);
+  const root = rootOf(allocations);
 
   const listed = new Map(s.allocations.map((a) => [a.account.toLowerCase(), BigInt(a.amount)]));
   if (listed.size !== allocations.length) problems.push(`snapshot lists ${listed.size} allocations, recomputed ${allocations.length}`);

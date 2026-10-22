@@ -5,6 +5,7 @@ import { getAddress, type Address } from 'viem';
 import {
   allocate,
   buildSnapshot,
+  EMPTY_ROOT,
   buildTree,
   eligibleTotals,
   serializeSnapshot,
@@ -144,6 +145,13 @@ describe('snapshot', () => {
     const bytes = serializeSnapshot(s);
     const res = verifySnapshot(s, { root: s.root, totalAllocated: BigInt(s.totalAllocated), hash: snapshotHash(bytes), bytes });
     expect(res.problems).toEqual([]);
+  });
+
+  it('handles campaigns with no eligible creators (sentinel root, nothing allocated)', () => {
+    const s = buildSnapshot({ ...input, creators: [] });
+    expect(s.root).toBe(EMPTY_ROOT);
+    expect(s.totalAllocated).toBe('0');
+    expect(verifySnapshot(s).ok).toBe(true);
   });
 
   it('flags tampered allocations, roots and content hashes', () => {

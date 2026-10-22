@@ -18,6 +18,8 @@
     "chain:down": "scripts/chain/down.sh",
     "accounts": "pnpm --filter @reachpot/scripts exec tsx accounts.ts",
     "deploy:local": "pnpm build:contracts && pnpm --filter @reachpot/core gen:abi && pnpm --filter @reachpot/scripts exec tsx deploy.ts --network local",
-    "deploy:testnet": "pnpm build:contracts && pnpm --filter @reachpot/core gen:abi && pnpm --filter @reachpot/scripts exec tsx deploy.ts --network testnet"
+    "deploy:testnet": "pnpm build:contracts && pnpm --filter @reachpot/core gen:abi && pnpm --filter @reachpot/scripts exec tsx deploy.ts --network testnet",
+    "e2e": "pnpm --filter @reachpot/scripts exec tsx e2e.ts",
+    "dev": "pnpm --filter @reachpot/web dev"
   }
 }

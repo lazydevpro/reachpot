@@ -25,7 +25,7 @@ console.log(`native admin ${admin.address}: ${fmtUnits(await freeBalance(api, ad
 
 // 1. Native gas for the EVM roles (Revive charges the mapped native account).
 const budget = net.name === 'local'
-  ? { deployer: 1_000n * one, oracle: 1_000n * one, guardian: 100n * one, brand: 1_000n * one }
+  ? { deployer: 1_000_000n * one, oracle: 1_000_000n * one, guardian: 100_000n * one, brand: 1_000_000n * one } // revive reserves large gas up front locally
   : { deployer: 4n * one, oracle: 3n * one, guardian: 1n * one, brand: 3n * one };
 const funded = new Set<string>();
 for (const [role, acct] of Object.entries(roles) as [keyof typeof budget, (typeof roles)[keyof typeof roles]][]) {

@@ -15,11 +15,12 @@
     "@reachpot/allocation": "workspace:^",
     "@reachpot/core": "workspace:^",
     "dotenv": "^18.0.8",
-    "viem": "^2.57.10"
+    "viem": "^2.57.10",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
     "tsx": "^4.23.15",
-    "typescript": "^7.0.2"
+    "typescript": "^5.9.3"
   }
 }
