@@ -85,7 +85,14 @@ npx wrangler@4 deploy --config infra/keeper-cron/wrangler.jsonc
 grep '^KEEPER_SECRET=' .env | cut -d= -f2- | npx wrangler@4 secret put KEEPER_SECRET --config infra/keeper-cron/wrangler.jsonc
 ```
 
-Set `KEEPER_URL` in `wrangler.jsonc` to your app's URL. `npx wrangler@4 tail reachpot-keeper-cron` shows each tick.
+Set `KEEPER_URL` in `wrangler.jsonc` to your app's URL. The Worker loops on a Durable Object alarm (no Cron Trigger
+slot needed; the free plan allows 5 per account). Start the loop once, and check on it any time, with a request to the
+Worker: it returns the next tick time and the last tick's status. `npx wrangler@4 tail reachpot-keeper-cron` shows
+each tick.
+
+```bash
+curl -s https://reachpot-keeper-cron.<your-subdomain>.workers.dev
+```
 
 ### Optional: manual ticks from GitHub Actions
 

@@ -6,7 +6,7 @@ Check-in: **2026-10-24 12:00 UTC** · Final / code freeze: **2026-11-06 04:00 UT
 - [ ] Fund native admin `5EqSmfgK1r4RCvxFaikQyH8j8Xktxs3Ay7SDYzURJWQqDUd5` with ~45 tPOT (user) #infra
 - [ ] `pnpm deploy:testnet` → commit `deployments/testnet.json` #deploy
 - [ ] `pnpm e2e --network testnet` → commit `docs/e2e-testnet.md` (tx hashes) #deploy
-- [ ] Record demo video ≤3 min (local or testnet) #submission
+- [x] Record demo video ≤3 min: narrated, 102 s, `demo/reachpot-demo.mp4` (gitignored; local chain + live-site intro) #submission
 - [ ] Submit check-in on DoraHacks (user) #submission
 
 ## Done
@@ -25,8 +25,8 @@ Check-in: **2026-10-24 12:00 UTC** · Final / code freeze: **2026-11-06 04:00 UT
 - [x] Hosting prep: Postgres adapter (Neon via DATABASE_URL, verified with the full e2e over the wire protocol), bundled testnet deployment, serverless guards, CI + keeper GitHub Actions, [docs/deploy.md](docs/deploy.md) #infra
 - [x] Vercel project `reachpot` live at https://reachpot.vercel.app (Neon `reachpot-db`, env vars, keeper secrets on GitHub) #infra
 - [x] Vercel ↔ GitHub connected: every push to main auto-deploys #infra
-- [x] Keeper on an every-minute Cloudflare cron Worker (`infra/keeper-cron`) + daily Vercel Cron backstop + Postgres lease so ticks never overlap; GitHub schedule retired (it fired hours apart) #infra
-- [ ] Demo video with OpenScreen (plan in `openscreen-demo-plan.md`, new session: "continue the OpenScreen demo") #submission
+- [x] Keeper ticked every minute by a Cloudflare Worker (`infra/keeper-cron`, Durable Object alarm loop) + daily Vercel Cron backstop + Postgres lease so ticks never overlap; GitHub schedule retired (it fired hours apart) #infra
+- [x] Demo video with OpenScreen: site tour intro, demo, outro, Gemini TTS narration (`openscreen-demo-plan.md`) #submission
 - [x] Testnet e2e against the hosted app green → [docs/e2e-testnet.md](docs/e2e-testnet.md) #deploy
 - [ ] (Alternative host) Cloudflare Workers Paid: vinext + D1 + cron Worker — only if moving off Vercel #infra
 - [ ] Invariant test with handler (AC4 extra) #contracts
