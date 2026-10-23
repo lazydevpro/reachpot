@@ -34,3 +34,7 @@ apps/web/.data/
 .agents/
 .claude/skills/
 skills-lock.json
+
+# OpenScreen demo working files (videos never go in the repo)
+openscreen-demo-plan.md
+demo/
