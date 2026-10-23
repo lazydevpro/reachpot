@@ -1,0 +1,15 @@
+# Upload only what the web app build needs (root dir: apps/web; workspace packages + deployments/testnet.json).
+contracts/
+.bin/
+docs/
+scripts/out/
+apps/web/.data/
+apps/web/.next/
+**/node_modules/
+.env
+.env.*
+!.env.example
+.agents/
+.claude/
+skills-lock.json
+deployments/local.json

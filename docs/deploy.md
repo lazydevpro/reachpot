@@ -1,5 +1,22 @@
 # Deploying the web app (Vercel + Neon + GitHub Actions)
 
+**Live:** https://reachpot.vercel.app — Vercel project `reachpot` (team `lazydevpros-projects-15b62d5b`), linked from the
+repo root with the CLI (`.vercel/`, gitignored), Neon database `reachpot-db`, keeper secrets set on GitHub.
+
+CLI equivalents of the steps below (already done for the live project):
+
+```bash
+vercel project create reachpot --scope <team>
+vercel link --yes --project reachpot --scope <team>
+vercel project update reachpot --root-directory apps/web --framework nextjs --node-version 22.x --fluid-compute --scope <team> --yes
+vercel integration add neon --name reachpot-db -e production -e preview -e development --no-env-pull --scope <team>
+printf '%s' "<value>" | vercel env add KEEPER_SECRET production --sensitive --scope <team>   # same for the other vars
+vercel deploy --prod --scope <team>
+```
+
+Auto-deploy on push needs the Vercel GitHub app to have access to the repo (GitHub → Settings → Applications → Vercel →
+Repository access), then `vercel git connect --scope <team>`.
+
 ```
 GitHub Actions ──every ~1 min──▶ POST /api/keeper/tick ─┐
                                                         ▼

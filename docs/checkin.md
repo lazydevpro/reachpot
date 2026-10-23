@@ -45,6 +45,8 @@ See the mermaid diagram in the README ("How it works").
 | Full details | [deployments/testnet.json](../deployments/testnet.json) |
 
 ## Initial demo material
+**Live DApp:** https://reachpot.vercel.app (Portaldot V3 testnet; brands connect MetaMask/Talisman, creators a Portaldot wallet).
+
 Demo video (≤3 min, recorded on the local chain, which runs Portaldot's runtime) showing: brand locks a pot →
 creators submit → snapshot stored in TransactionStorage → root → payouts → in-browser verification → DEX cash-out.
 *(add the video link here)*

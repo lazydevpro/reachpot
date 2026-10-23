@@ -29,3 +29,8 @@ scripts/out/
 deployments/local.json
 # app data (PGlite)
 apps/web/.data/
+# Vercel CLI link + marketplace agent skills (local tooling, not part of the project)
+.vercel
+.agents/
+.claude/skills/
+skills-lock.json
