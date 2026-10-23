@@ -7,7 +7,7 @@ Check-in: **2026-10-24 12:00 UTC** · Final / code freeze: **2026-11-06 04:00 UT
 - [ ] `pnpm deploy:testnet` → commit `deployments/testnet.json` #deploy
 - [ ] `pnpm e2e --network testnet` → commit `docs/e2e-testnet.md` (tx hashes) #deploy
 - [x] Record demo video ≤3 min: narrated, 102 s, `demo/reachpot-demo.mp4` (gitignored; local chain + live-site intro) #submission
-- [ ] Submit check-in on DoraHacks (user) #submission
+- [~] Submit check-in on DoraHacks: video https://youtu.be/EtGjwMlh9Zg, Build drafted #submission
 
 ## Done
 - [x] Spec, plan, eligibility notes, prior-work disclosure #docs
@@ -32,4 +32,5 @@ Check-in: **2026-10-24 12:00 UTC** · Final / code freeze: **2026-11-06 04:00 UT
 - [ ] Invariant test with handler (AC4 extra) #contracts
 - [ ] Guardian UI (cancel root) #web
 - [ ] Stretch: MetaTx-sponsored creator actions; sponsor the mapAccount deposit for first-time creators #native
-- [ ] Pitch deck PDF + final README pass #submission
+- [x] Pitch deck PDF ([docs/pitch/Reachpot-pitch.pdf](docs/pitch/Reachpot-pitch.pdf)) #submission
+- [ ] Final README pass #submission

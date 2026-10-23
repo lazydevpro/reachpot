@@ -32,7 +32,7 @@ https://github.com/lazydevpro/reachpot (README with architecture diagram, spec/p
 
 ## Outstanding items
 - Real YouTube verification (Data API key) instead of simulated views.
-- Final demo video, pitch deck, guardian UI.
+- Guardian UI (cancel a bad root from the app), sponsored onboarding for first-time creators.
 
 ## Product architecture diagram
 See the mermaid diagram in the README ("How it works").
@@ -53,4 +53,6 @@ See the mermaid diagram in the README ("How it works").
 
 Demo video (≤3 min, recorded on the local chain, which runs Portaldot's runtime) showing: brand locks a pot →
 creators submit → snapshot stored in TransactionStorage → root → payouts → in-browser verification → DEX cash-out.
-*(add the video link here)*
+**Video:** https://youtu.be/EtGjwMlh9Zg
+
+**Pitch deck:** https://github.com/lazydevpro/reachpot/blob/main/docs/pitch/Reachpot-pitch.pdf
