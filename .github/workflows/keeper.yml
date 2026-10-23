@@ -1,12 +1,10 @@
-# Runs the Reachpot keeper against the deployed app: snapshot → root → payouts → badges.
-# Vercel's free plan only allows daily crons, so GitHub Actions drives it instead. Each run ticks ~once a minute
-# for ~5 minutes and the schedule starts a new run every 5 minutes, giving close to 1-minute cadence.
+# Manually ticks the Reachpot keeper against the deployed app: snapshot → root → payouts → badges.
+# The every-minute driver is the Cloudflare cron in infra/keeper-cron (GitHub's schedule fired hours apart), with a
+# daily Vercel Cron as a backstop. Keep this for a manual burst of ticks: Actions → Keeper → Run workflow.
 # Repository secrets: KEEPER_URL (e.g. https://reachpot.vercel.app) and KEEPER_SECRET (same value as on Vercel).
 name: Keeper
 
 on:
-  schedule:
-    - cron: '*/5 * * * *'
   workflow_dispatch:
     inputs:
       ticks:

@@ -23,7 +23,7 @@ https://github.com/lazydevpro/reachpot (README with architecture diagram, spec/p
   **one-tap cash-out on the native DEX (AssetConversion)**.
 - **Full lifecycle verified end to end** on a local chain running Portaldot's runtime (Parity kitchensink + eth-rpc):
   [docs/e2e-local.md](e2e-local.md).
-- **Ready to host:** Vercel + Neon Postgres + GitHub Actions keeper; CI on every push ([docs/deploy.md](deploy.md)).
+- **Ready to host:** Vercel + Neon Postgres + every-minute Cloudflare cron keeper; CI on every push ([docs/deploy.md](deploy.md)).
 
 - **Full lifecycle run end to end on testnet** against the hosted app (https://reachpot.vercel.app): every step and
   transaction hash is in [docs/e2e-testnet.md](e2e-testnet.md). The snapshot was stored in TransactionStorage at

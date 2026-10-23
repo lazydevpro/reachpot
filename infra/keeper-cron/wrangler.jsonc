@@ -1,0 +1,13 @@
+// Cloudflare Cron Trigger that drives the Reachpot keeper on Vercel every minute (Vercel Hobby crons run once a day).
+// Deploy: see README.md in this folder.
+{
+  "$schema": "https://unpkg.com/wrangler@4/config-schema.json",
+  "name": "reachpot-keeper-cron",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": false,
+  "preview_urls": false,
+  "triggers": { "crons": ["* * * * *"] },
+  "vars": { "KEEPER_URL": "https://reachpot.vercel.app" },
+  "observability": { "enabled": true }
+}

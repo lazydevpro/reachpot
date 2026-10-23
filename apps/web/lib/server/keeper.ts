@@ -1,5 +1,6 @@
 // The oracle/keeper: refreshes views, publishes the snapshot to TransactionStorage, posts the payout root, pushes
 // payouts, and keeps creator badges up to date. Runs every few seconds (instrumentation.ts) or via POST /api/keeper/tick.
+import { randomUUID } from 'node:crypto';
 import { and, eq, isNull } from 'drizzle-orm';
 import { bytesToHex, parseEventLogs, type Address, type Hex } from 'viem';
 import { CampaignStatus, fmtUnits, reachpotAbi } from '@reachpot/core';
@@ -9,6 +10,7 @@ import { EMPTY_ROOT, buildSnapshot, buildTree, eligibleTotals, serializeSnapshot
 import { logActivity } from './activity';
 import { nativeAdmin, nativeApi, oracleWallet, publicClient, readCampaign, isZeroHash, type OnchainCampaign } from './chain';
 import { db, schema } from './db';
+import { acquireKeeperLease, releaseKeeperLease } from './keeper-lease';
 import { deployment, network, serverEnv } from './env';
 import { fetchYouTube, mockViews } from './youtube';
 
@@ -20,13 +22,31 @@ const g = globalThis as unknown as { __reachpotTick?: Promise<TickReport>; __rea
 
 export interface TickReport {
   at: string;
+  /** Set when another instance holds the keeper lease; this call did nothing. */
+  skipped?: string;
   campaigns: { id: number; status: string; actions: string[]; error?: string }[];
 }
 
-/** Single-flight: overlapping calls share the running tick. */
+/** A tick may run up to the route's maxDuration (300 s); the lease outlives it so a killed tick frees it soon after. */
+const LEASE_SECONDS = 330;
+
+/** Single-flight: overlapping calls share the running tick; across instances, the keeper lease keeps ticks apart. */
 export function keeperTick(): Promise<TickReport> {
-  g.__reachpotTick ??= runTick().finally(() => (g.__reachpotTick = undefined));
+  g.__reachpotTick ??= leasedTick().finally(() => (g.__reachpotTick = undefined));
   return g.__reachpotTick;
+}
+
+async function leasedTick(): Promise<TickReport> {
+  const d = await db();
+  const holder = randomUUID();
+  if (!(await acquireKeeperLease(d, holder, LEASE_SECONDS))) {
+    return { at: new Date().toISOString(), skipped: 'another keeper tick is running', campaigns: [] };
+  }
+  try {
+    return await runTick();
+  } finally {
+    await releaseKeeperLease(d, holder).catch((e) => console.error('[reachpot] keeper lease release:', e));
+  }
 }
 
 async function runTick(): Promise<TickReport> {

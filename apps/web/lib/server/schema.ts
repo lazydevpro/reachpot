@@ -109,6 +109,13 @@ export const activity = pgTable(
   (t) => [index('activity_campaign').on(t.contract, t.campaignId)],
 );
 
+/** One-row lease so only one keeper tick runs at a time across serverless instances (single-flight is per process). */
+export const keeperLease = pgTable('keeper_lease', {
+  id: integer('id').primaryKey(),
+  holder: text('holder').notNull(),
+  until: timestamp('until', { withTimezone: true }).notNull(),
+});
+
 /** Idempotent bootstrap DDL (kept in sync with the tables above) — no migration tooling needed for v1. */
 export const BOOTSTRAP_SQL = `
 CREATE TABLE IF NOT EXISTS campaigns (
@@ -150,4 +157,5 @@ CREATE TABLE IF NOT EXISTS activity (
   tx text, at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS activity_campaign ON activity (contract, campaign_id);
+CREATE TABLE IF NOT EXISTS keeper_lease (id integer PRIMARY KEY, holder text NOT NULL, until timestamptz NOT NULL);
 `;

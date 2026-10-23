@@ -17,6 +17,8 @@ export const serverEnv = {
   viewsSource: (process.env.VIEWS_SOURCE ?? (process.env.YOUTUBE_API_KEY ? 'youtube' : 'mock')) as 'mock' | 'youtube',
   youtubeApiKey: process.env.YOUTUBE_API_KEY,
   keeperSecret: process.env.KEEPER_SECRET ?? (network.name === 'local' ? 'local-dev' : undefined),
+  /** Vercel Cron sends `Authorization: Bearer $CRON_SECRET` (daily backstop; the every-minute driver is a Cloudflare cron). */
+  cronSecret: process.env.CRON_SECRET,
   keeperIntervalMs: Number(process.env.KEEPER_INTERVAL_MS ?? (network.name === 'local' ? 4000 : 30000)),
   dataDir: process.env.PGLITE_DIR ?? resolve(process.cwd(), '.data', network.name),
   devTools: network.name === 'local' || process.env.ENABLE_DEV_TOOLS === '1',

@@ -92,8 +92,8 @@ On the local chain the app offers **pre-funded dev wallets**, so no browser exte
 
 ## Deploy
 
-The web app runs on **Vercel**, with **Neon Postgres** for data and **GitHub Actions** ticking the keeper about once a
-minute. CI runs the contract, allocation, typecheck and build checks on every push. Step by step:
+The web app runs on **Vercel**, with **Neon Postgres** for data and a **Cloudflare cron Worker** ticking the keeper every
+minute (a daily Vercel Cron is the backstop). CI runs the contract, allocation, typecheck and build checks on every push. Step by step:
 **[docs/deploy.md](docs/deploy.md)**.
 
 ## Testnet
