@@ -25,10 +25,14 @@ https://github.com/lazydevpro/reachpot (README with architecture diagram, spec/p
   [docs/e2e-local.md](e2e-local.md).
 - **Ready to host:** Vercel + Neon Postgres + GitHub Actions keeper; CI on every push ([docs/deploy.md](deploy.md)).
 
+- **Full lifecycle run end to end on testnet** against the hosted app (https://reachpot.vercel.app): every step and
+  transaction hash is in [docs/e2e-testnet.md](e2e-testnet.md). The snapshot was stored in TransactionStorage at
+  block 157,841, two creators were paid 4,000 rUSD each (capped), badges were minted, a creator cashed out on
+  AssetConversion and the brand reclaimed the 2,000 rUSD remainder.
+
 ## Outstanding items
-- Scripted end-to-end run on testnet. It needs ~60 more tPOT: Revive deposits are 0.06 tPOT/byte, and our deploy alone
-  locked 448 tPOT. We've asked the Portaldot team for more.
-- Hosted demo on Vercel; real YouTube verification (Data API key); pitch deck and final demo video.
+- Real YouTube verification (Data API key) instead of simulated views.
+- Final demo video, pitch deck, guardian UI.
 
 ## Product architecture diagram
 See the mermaid diagram in the README ("How it works").

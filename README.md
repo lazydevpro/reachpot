@@ -12,8 +12,9 @@ account. Creators cash out on Portaldot's native DEX, and every payout levels up
 > **Status:** deployed on **Portaldot V3 testnet**: `Reachpot` at
 > [`0xcfcdb8ccac9b95534aedbbe9c90e49a6a1d493cf`](deployments/testnet.json) (deploy tx
 > `0x437ca8659ea19af2ba7cc578e755eed2f3d1aaca4a7d1a65dada5412c6273a15`, block 150,033), with the rUSD/NOVA native
-> assets, native-DEX pools and the badge collection. The full lifecycle runs end to end on a local chain with Portaldot's
-> runtime ([e2e run](docs/e2e-local.md)); the scripted testnet run is next ([runbook](docs/testnet.md)).
+> assets, native-DEX pools and the badge collection. **The full lifecycle has run end to end on testnet against the
+> hosted app** ([testnet e2e](docs/e2e-testnet.md)): fund → signed submissions → snapshot in TransactionStorage →
+> root → dispute window → payouts → soulbound badges → independent verification → DEX cash-out → brand refund.
 > Built for [Portaldot Hacker House 2026](https://dorahacks.io/hackathon/portaldot-hacker-house-2026/detail), Ecosystem DApps track.
 
 ## Why

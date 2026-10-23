@@ -24,8 +24,9 @@ Check-in: **2026-10-24 12:00 UTC** · Final / code freeze: **2026-11-06 04:00 UT
 - [ ] Real YouTube mode on testnet with a real Short (needs `YOUTUBE_API_KEY`) #web
 - [x] Hosting prep: Postgres adapter (Neon via DATABASE_URL, verified with the full e2e over the wire protocol), bundled testnet deployment, serverless guards, CI + keeper GitHub Actions, [docs/deploy.md](docs/deploy.md) #infra
 - [x] Vercel project `reachpot` live at https://reachpot.vercel.app (Neon `reachpot-db`, env vars, keeper secrets on GitHub) #infra
-- [ ] User: give the Vercel GitHub app access to `lazydevpro/reachpot`, then `vercel git connect` (auto-deploy on push) #infra
-- [ ] `pnpm e2e --network testnet --web https://<app>.vercel.app` once more tPOT arrives (~60) #deploy
+- [x] Vercel ↔ GitHub connected: every push to main auto-deploys #infra
+- [ ] Demo video with OpenScreen (plan in `openscreen-demo-plan.md`, new session: "continue the OpenScreen demo") #submission
+- [x] Testnet e2e against the hosted app green → [docs/e2e-testnet.md](docs/e2e-testnet.md) #deploy
 - [ ] (Alternative host) Cloudflare Workers Paid: vinext + D1 + cron Worker — only if moving off Vercel #infra
 - [ ] Invariant test with handler (AC4 extra) #contracts
 - [ ] Guardian UI (cancel root) #web
