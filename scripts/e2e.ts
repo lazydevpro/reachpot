@@ -11,7 +11,7 @@ import { resolve } from 'node:path';
 import { stringToU8a, u8aToHex } from '@polkadot/util';
 import { erc20Abi, keccak256, parseEventLogs, toBytes, type Address, type Hex } from 'viem';
 import { CampaignStatus, STATUS_LABEL, campaignFromTuple, fmtUnits, reachpotAbi } from '@reachpot/core';
-import { assetBalance, assetKind, freeBalance, isMapped, nativeKind, readStoredData, sendNative } from '@reachpot/core/native';
+import { accountOfH160, assetBalance, assetKind, freeBalance, isMapped, nativeKind, readStoredData, sendNative } from '@reachpot/core/native';
 import { snapshotHash, verifySnapshot, type Snapshot } from '@reachpot/allocation';
 import { ROOT, arg, demoCreators, evmClients, evmRoles, loadDeployment, nativeAdmin, native, net } from './lib/ctx.js';
 
@@ -44,6 +44,24 @@ const token = dep.assets.find((a) => a.symbol === 'rUSD')!;
 const U = 10n ** BigInt(token.decimals);
 const reachpot = dep.reachpot.address;
 console.log(`Reachpot e2e on ${net.label} · web ${WEB} · contract ${reachpot}\n`);
+
+// On testnet the EVM roles share one key (brand + oracle); Revive storage deposits for createCampaign, postRoot and
+// payouts (~45 tPOT) are paid from its mapped native account, so top it up from the native admin first.
+if (net.name !== 'local') {
+  const admin = await nativeAdmin();
+  const target = 100n * 10n ** BigInt(units.decimals);
+  const seen = new Set<string>();
+  for (const acct of Object.values(roles)) {
+    const nativeAcct = await accountOfH160(chain, acct.address);
+    if (seen.has(nativeAcct)) continue;
+    seen.add(nativeAcct);
+    const free = await freeBalance(chain, nativeAcct);
+    if (free < target) {
+      const r = await sendNative(chain, chain.tx.balances.transferKeepAlive(nativeAcct, target - free), admin);
+      ok('fund EVM roles (gas + Revive storage deposits)', `${acct.address} ← ${fmtUnits(target - free, units.decimals)} ${dep.native.symbol}`, r.txHash);
+    }
+  }
+}
 
 // ----------------------------------------------------------- 1. brand funds
 const now = Math.floor(Date.now() / 1000);
@@ -126,9 +144,12 @@ type Detail = { status: number; root: string | null; snapshot: { hash: Hex; bloc
 const tick = () => api('/api/keeper/tick', { method: 'POST', headers: { 'x-keeper-secret': KEEPER_SECRET } }).catch(() => null);
 let detail: Detail;
 let lastStatus = -1;
+// Against a hosted app the GitHub Actions keeper also ticks; tick less often there to avoid racing the shared signer.
+const remote = !/localhost|127\.0\.0\.1/.test(WEB);
+let polls = 0;
 const deadline = Date.now() + (windowSecs + dep.windows.minMeasurementDelay + dep.windows.disputeWindow + 180) * 1000;
 for (;;) {
-  await tick();
+  if (!remote || polls++ % 5 === 0) await tick();
   detail = await api<Detail>(`/api/campaigns/${id}`);
   if (detail.status !== lastStatus) {
     console.log(`   … status: ${STATUS_LABEL[detail.status as CampaignStatus]}`);
