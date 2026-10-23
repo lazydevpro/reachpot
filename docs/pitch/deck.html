@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Reachpot — pitch deck</title>
+<!-- Source of docs/pitch/Reachpot-pitch.pdf (fonts load from apps/web/node_modules after pnpm install). Rebuild from docs/pitch:
+     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --no-pdf-header-footer --virtual-time-budget=5000 --print-to-pdf="$PWD/Reachpot-pitch.pdf" "file://$PWD/deck.html" -->
+<style>
+  @font-face { font-family: 'Open Runde'; font-weight: 400; src: url('../../apps/web/node_modules/@fontsource/open-runde/files/open-runde-latin-400-normal.woff2') format('woff2'); }
+  @font-face { font-family: 'Open Runde'; font-weight: 600; src: url('../../apps/web/node_modules/@fontsource/open-runde/files/open-runde-latin-600-normal.woff2') format('woff2'); }
+  @font-face { font-family: 'Open Runde'; font-weight: 700; src: url('../../apps/web/node_modules/@fontsource/open-runde/files/open-runde-latin-700-normal.woff2') format('woff2'); }
+  @page { size: 1600px 900px; margin: 0; }
+  :root { --ink:#25202d; --muted:#5f5968; --faint:#9b95a3; --canvas:#f6f5f7; --line:rgba(37,32,45,.09); --accent:#7b5cff; --coral:#ff7a59; --good:#12a150; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; font-family: 'Open Runde', -apple-system, system-ui, sans-serif; color: var(--muted); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .slide { width: 1600px; height: 900px; padding: 84px 104px; background: var(--canvas); position: relative; overflow: hidden; page-break-after: always; display: flex; flex-direction: column; }
+  .slide.mid { justify-content: center; }
+  .slide.mid .eyebrow { margin-top: -40px; }
+  .slide:last-child { page-break-after: auto; }
+  .glow { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .55; pointer-events: none; }
+  h1, h2, h3 { color: var(--ink); font-weight: 600; letter-spacing: -0.035em; margin: 0; }
+  h1 { font-size: 92px; line-height: 1.0; }
+  h2 { font-size: 58px; line-height: 1.04; margin-bottom: 18px; }
+  h3 { font-size: 26px; letter-spacing: -0.02em; margin-bottom: 8px; }
+  p { margin: 0; font-size: 24px; line-height: 1.5; letter-spacing: -0.015em; }
+  .eyebrow { font-size: 18px; font-weight: 600; color: var(--faint); letter-spacing: 0; margin-bottom: 18px; text-transform: none; }
+  .lead { font-size: 30px; line-height: 1.45; max-width: 1100px; }
+  .grid { display: grid; gap: 22px; }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  .g2 { grid-template-columns: 1fr 1fr; }
+  .card { background: #fff; border-radius: 30px; padding: 32px 34px; box-shadow: 0 1px 2px rgba(37,32,45,.04), 0 18px 40px -22px rgba(37,32,45,.22); border: 1px solid var(--line); }
+  .card p { font-size: 21px; }
+  .num { font-size: 50px; font-weight: 600; color: var(--ink); letter-spacing: -0.04em; line-height: 1; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 18px; border-radius: 999px; background: #fff; border: 1px solid var(--line); font-size: 18px; font-weight: 600; color: var(--ink); }
+  .dark { background: linear-gradient(180deg,#3b3444,#221d29); color: #fff; border: 0; }
+  .icon { width: 120px; height: 120px; border-radius: 30px; background: radial-gradient(120% 90% at 20% 15%,#ffd2c2 0%,transparent 55%),radial-gradient(110% 100% at 85% 25%,#c9b8ff 0%,transparent 60%),radial-gradient(120% 120% at 50% 100%,#8f74ff 0%,#ff8a6b 100%); display: grid; place-items: center; box-shadow: inset 0 2px 0 rgba(255,255,255,.55), 0 18px 40px -18px rgba(123,92,255,.6); }
+  .icon svg { width: 60%; height: 60%; }
+  table { width: 100%; border-collapse: separate; border-spacing: 0 12px; }
+  td { background: #fff; padding: 20px 26px; font-size: 21px; line-height: 1.4; vertical-align: top; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  td:first-child { border-left: 1px solid var(--line); border-radius: 22px 0 0 22px; font-weight: 600; color: var(--ink); width: 34%; }
+  td:last-child { border-right: 1px solid var(--line); border-radius: 0 22px 22px 0; }
+  .flow { display: flex; align-items: stretch; gap: 14px; margin-top: 18px; }
+  .step { flex: 1; background: #fff; border: 1px solid var(--line); border-radius: 24px; padding: 22px; }
+  .step b { display: block; color: var(--ink); font-size: 22px; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .step span { font-size: 17px; line-height: 1.45; display: block; }
+  .step .k { font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 10px; display: block; }
+  .arrow { align-self: center; color: var(--faint); font-size: 28px; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 18px; color: var(--ink-2, #3d3746); }
+  .foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; font-size: 17px; color: var(--faint); }
+  .ok { color: var(--good); font-weight: 700; }
+  ul.clean { list-style: none; padding: 0; margin: 0; }
+  ul.clean li { font-size: 22px; line-height: 1.45; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  ul.clean li b { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<!-- 1. Cover -->
+<section class="slide" style="justify-content:center">
+  <div class="glow" style="width:700px;height:700px;right:-120px;top:-160px;background:#c9b8ff"></div>
+  <div class="glow" style="width:520px;height:520px;right:240px;bottom:-260px;background:#ffb59e"></div>
+  <div class="icon" style="margin-bottom:44px"><svg viewBox="0 0 24 24" fill="none"><rect x="6.2" y="7" width="2.6" height="5.5" rx="1.3" fill="#fff" fill-opacity=".95"/><rect x="10.7" y="4" width="2.6" height="8.5" rx="1.3" fill="#fff"/><rect x="15.2" y="5.8" width="2.6" height="6.7" rx="1.3" fill="#fff" fill-opacity=".9"/><path d="M3.5 11.5h17a.5.5 0 0 1 .5.55A8.6 8.6 0 0 1 12.4 20h-.8A8.6 8.6 0 0 1 3 12.05a.5.5 0 0 1 .5-.55Z" fill="#fff"/></svg></div>
+  <p class="eyebrow">Portaldot Hacker House 2026 · Ecosystem DApps</p>
+  <h1>Reachpot</h1>
+  <p class="lead" style="margin-top:22px;font-size:40px;color:var(--ink);letter-spacing:-0.03em">Get paid for your reach, fairly.</p>
+  <p class="lead" style="margin-top:14px">Pro-rata creator campaigns on Portaldot V3, funded in any Portaldot native asset.</p>
+  <div style="display:flex;gap:12px;margin-top:40px">
+    <span class="pill dark">reachpot.vercel.app</span>
+    <span class="pill">github.com/lazydevpro/reachpot</span>
+    <span class="pill">Live on Portaldot V3 testnet</span>
+  </div>
+</section>
+
+<!-- 2. Problem -->
+<section class="slide mid">
+  <p class="eyebrow">The problem</p>
+  <h2>Paying creators per view is broken.</h2>
+  <p class="lead">Brands already pay "clippers" to post Shorts about them. Fixed-CPM programs fail creators in three ways:</p>
+  <div class="grid g3" style="margin-top:40px">
+    <div class="card"><h3>First-come drain</h3><p>Budgets run out early. Late creators with great posts earn nothing.</p></div>
+    <div class="card"><h3>Opaque payouts</h3><p>The platform decides what counts and pays off-chain, when and where it likes.</p></div>
+    <div class="card"><h3>Rejection pays</h3><p>Rejecting a submission saves the brand money, so creators carry all the risk.</p></div>
+  </div>
+  <div class="card" style="margin-top:22px;background:linear-gradient(120deg,#fff,#f3efff)"><p style="font-size:23px"><b style="color:var(--ink)">And on Portaldot:</b> new projects need distribution and real utility for their tokens, and creators need a way to turn a project token into something they can use.</p></div>
+</section>
+
+<!-- 3. Solution -->
+<section class="slide mid">
+  <p class="eyebrow">The solution</p>
+  <h2>A pot, escrowed on-chain, split by views.</h2>
+  <p class="lead">A brand locks a pot in any Portaldot token. Creators post Shorts. When the window closes, the pot splits pro-rata by views, with a per-creator cap, and every creator is paid on-chain.</p>
+  <div class="grid g3" style="margin-top:40px">
+    <div class="card"><div class="num">100%</div><p style="margin-top:12px">of the pot is spent. A capped creator's excess re-splits across everyone else ("water-filling").</p></div>
+    <div class="card"><div class="num">0</div><p style="margin-top:12px">ways for the brand to claw back a live pot. Only the never-allocated remainder is refundable.</p></div>
+    <div class="card"><div class="num">1 tap</div><p style="margin-top:12px">for a creator to cash a project-token payout out to POT on Portaldot's native DEX.</p></div>
+  </div>
+</section>
+
+<!-- 4. How it works -->
+<section class="slide">
+  <p class="eyebrow">How it works</p>
+  <h2>From pot to payout, verifiable at every step.</h2>
+  <div class="flow">
+    <div class="step"><span class="k">1 · FUND</span><b>Brand locks a pot</b><span>approve via the native-asset ERC-20 precompile → <code>createCampaign</code>; rules hash pinned on-chain</span></div><div class="arrow">→</div>
+    <div class="step"><span class="k">2 · SUBMIT</span><b>Creators post Shorts</b><span>Portaldot wallet signs each submission; payouts bound to the creator's account</span></div><div class="arrow">→</div>
+    <div class="step"><span class="k">3 · SNAPSHOT</span><b>Keeper splits by views</b><span>snapshot stored in TransactionStorage; Merkle root + blake2 hash posted to the contract</span></div>
+  </div>
+  <div class="flow">
+    <div class="step"><span class="k">4 · DISPUTE</span><b>Anyone verifies</b><span>re-read the snapshot from chain, recompute the root in the browser; guardian can cancel a bad root</span></div><div class="arrow">→</div>
+    <div class="step"><span class="k">5 · PAY</span><b>Everyone is paid</b><span><code>payoutMany</code> pushes payouts; a failing recipient never blocks the batch</span></div><div class="arrow">→</div>
+    <div class="step"><span class="k">6 · OWN</span><b>Badge + cash-out</b><span>soulbound creator badge (Nfts) levels up; swap to POT on AssetConversion</span></div>
+  </div>
+  <div class="foot"><span>Keeper: snapshot → root → payouts → badges, ticked every minute</span><span>Trust: custody & limits trustless · split verifiable · views by oracle (v1)</span></div>
+</section>
+
+<!-- 5. Why Portaldot -->
+<section class="slide">
+  <p class="eyebrow">Why Portaldot is essential</p>
+  <h2>Native modules and EVM, working as one product.</h2>
+  <table>
+    <tr><td>Revive EVM + native-asset ERC-20 precompiles</td><td>Reachpot.sol escrows native <b>Assets</b> tokens directly — any project token works, no wrapping, no bridge.</td></tr>
+    <tr><td>H160 ↔ native account mapping</td><td>Brands fund from MetaMask; creators use a Portaldot wallet; after <code>revive.mapAccount</code>, EVM payouts land in their native account.</td></tr>
+    <tr><td>AssetConversion (native DEX)</td><td>Creators swap payouts to POT in one tap with live on-chain quotes; campaigns add volume to the token's pool.</td></tr>
+    <tr><td>TransactionStorage</td><td>The allocation snapshot is published on-chain; the contract pins its hash and location so anyone can re-derive the root.</td></tr>
+    <tr><td>Nfts</td><td>Soulbound creator badges whose attributes (campaigns, views, earned) are a portable on-chain résumé.</td></tr>
+  </table>
+  <div class="foot"><span>On a plain EVM chain this needs a separate DEX, NFT contract and data-availability layer.</span></div>
+</section>
+
+<!-- 6. Proof -->
+<section class="slide">
+  <p class="eyebrow">Proof it works</p>
+  <h2>Live on Portaldot V3 testnet, end to end.</h2>
+  <div class="grid g2" style="margin-top:14px;align-items:start">
+    <ul class="clean">
+      <li><b>Contract</b> <span class="mono">0xcfcdb8cc…d493cf</span> · deployed at block 150,033</li>
+      <li><b>Snapshot</b> stored in TransactionStorage at block <b>157,841</b></li>
+      <li><b>2 creators paid</b> 4,000 rUSD each (capped); brand refunded 2,000</li>
+      <li><b>Soulbound badges</b> minted; cash-out on <b>AssetConversion</b></li>
+      <li><b>Independent check</b>: on-chain bytes → blake2 hash → recomputed root <span class="ok">✓</span></li>
+    </ul>
+    <div class="grid" style="gap:16px">
+      <div class="card" style="padding:26px 30px"><div class="num">23 + 17</div><p style="margin-top:8px">contract tests (unit, fuzz, golden fixtures shared with TS) + allocation tests · CI on every push</p></div>
+      <div class="card" style="padding:26px 30px"><div class="num">Live</div><p style="margin-top:8px">reachpot.vercel.app — Next.js app + Postgres + keeper, auto-deployed from GitHub</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>Every transaction hash: docs/e2e-testnet.md</span><span>Deployment: deployments/testnet.json</span></div>
+</section>
+
+<!-- 7. Built for Portaldot's economics -->
+<section class="slide mid">
+  <p class="eyebrow">Engineered for Portaldot</p>
+  <h2>Designed around Revive's storage deposits.</h2>
+  <p class="lead">On Portaldot, deploying costs ~0.078 POT per byte of initcode (0.06/byte code deposit + 30% code-hash lockup). We measured it, then built for it.</p>
+  <div class="grid g3" style="margin-top:36px">
+    <div class="card"><div class="num">7.9 → 5.9 KB</div><p style="margin-top:12px">Contract slimmed (no admin surface, shared transfer helper, size-optimised build): deploy <b>615 → 448</b> tPOT.</p></div>
+    <div class="card"><div class="num">~19 · ~16</div><p style="margin-top:12px">tPOT deposits per campaign and per payout root; ~4 per creator paid; ~3.3 to map a creator account.</p></div>
+    <div class="card"><div class="num">Documented</div><p style="margin-top:12px">Costs, the precompile address layout and the H160 mapping flow are written up for other builders.</p></div>
+  </div>
+</section>
+
+<!-- 8. Business -->
+<section class="slide mid">
+  <p class="eyebrow">Business model & growth</p>
+  <h2>A growth engine for Portaldot projects.</h2>
+  <div class="grid g2" style="margin-top:20px">
+    <div class="card"><h3>Who pays</h3><p>Portaldot projects launching tokens, and Web2 brands running creator campaigns. They fund pots; creators earn.</p>
+      <h3 style="margin-top:26px">Revenue (planned)</h3><p>A small protocol fee on each pot, verified-analytics tiers for brands, and featured campaign placement.</p></div>
+    <div class="card"><h3>The loop</h3><p>A project funds a pot in its own token → creators post and get paid → creators cash out on the native DEX → the token gains liquidity and holders, and Portaldot gains users who arrived through a Short.</p>
+      <h3 style="margin-top:26px">Why it wins</h3><p>Fair by construction (pro-rata, capped, no claw-back), verifiable by anyone, and paid in seconds instead of net-30.</p></div>
+  </div>
+</section>
+
+<!-- 9. Roadmap & ask -->
+<section class="slide mid">
+  <p class="eyebrow">Roadmap & why support it</p>
+  <h2>From hackathon to Portaldot mainnet.</h2>
+  <div class="grid g3" style="margin-top:20px">
+    <div class="card"><h3>Next (Nov)</h3><p>Real YouTube verification live (Data API + channel binding code), guardian UI, sponsored creator onboarding (MetaTx / mapping deposit).</p></div>
+    <div class="card"><h3>Mainnet</h3><p>Launch with Portaldot ecosystem projects as the first brands; audits; protocol fee switch.</p></div>
+    <div class="card"><h3>Later</h3><p>TikTok, X and Instagram Reels; attested view data (OAuth / zkTLS) to shrink oracle trust; brands from other chains.</p></div>
+  </div>
+  <div class="card" style="margin-top:22px;background:linear-gradient(120deg,#fff,#fff3ee)"><p style="font-size:23px"><b style="color:var(--ink)">The ask:</b> mainnet launch support, co-marketing with Portaldot projects as launch brands, and deposit/gas subsidies so first-time creators onboard free.</p></div>
+</section>
+
+<!-- 10. Close -->
+<section class="slide" style="justify-content:center;align-items:center;text-align:center">
+  <div class="glow" style="width:640px;height:640px;left:480px;top:-260px;background:#c9b8ff"></div>
+  <div class="icon" style="margin-bottom:36px"><svg viewBox="0 0 24 24" fill="none"><rect x="6.2" y="7" width="2.6" height="5.5" rx="1.3" fill="#fff" fill-opacity=".95"/><rect x="10.7" y="4" width="2.6" height="8.5" rx="1.3" fill="#fff"/><rect x="15.2" y="5.8" width="2.6" height="6.7" rx="1.3" fill="#fff" fill-opacity=".9"/><path d="M3.5 11.5h17a.5.5 0 0 1 .5.55A8.6 8.6 0 0 1 12.4 20h-.8A8.6 8.6 0 0 1 3 12.05a.5.5 0 0 1 .5-.55Z" fill="#fff"/></svg></div>
+  <h1 style="font-size:84px">Make every view count.</h1>
+  <div style="display:flex;gap:12px;margin-top:40px;justify-content:center">
+    <span class="pill dark">reachpot.vercel.app</span>
+    <span class="pill">github.com/lazydevpro/reachpot</span>
+  </div>
+  <p style="margin-top:26px;font-size:20px;color:var(--faint)">Reachpot · Portaldot Hacker House 2026 · built solo by lazydevpro</p>
+</section>
+
+</body>
+</html>
