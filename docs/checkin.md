@@ -1,5 +1,8 @@
 # DoraHacks check-in: paste-ready (due 2026-10-24 12:00 UTC)
 
+**Submitted 2026-10-23:** Build https://dorahacks.io/build/50212 (track Ecosystem DApps, under review). The progress
+answer on DoraHacks is capped at 960 characters, so it was submitted in a condensed form.
+
 ## Project
 **Reachpot**: get paid for your reach, fairly. Pro-rata creator campaigns on Portaldot V3, funded in any Portaldot
 native asset. Track: **Ecosystem DApps**.
