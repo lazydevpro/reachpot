@@ -8,18 +8,19 @@
     "node": ">=22"
   },
   "scripts": {
+    "setup": "sh scripts/setup.sh",
+    "test": "sh scripts/test.sh",
     "build:contracts": "cd contracts && forge build",
-    "test": "pnpm test:contracts && pnpm test:allocation",
     "test:contracts": "cd contracts && forge test",
-    "test:allocation": "pnpm --filter @reachpot/allocation test",
-    "verify": "pnpm --filter @reachpot/allocation verify",
-    "spike": "pnpm --filter @reachpot/scripts exec tsx spike-precompile.ts",
+    "test:allocation": "cd packages/allocation && npx vitest run",
+    "verify": "cd packages/allocation && npx tsx src/cli.ts",
+    "spike": "cd scripts && npx tsx spike-precompile.ts",
     "chain:up": "scripts/chain/up.sh",
     "chain:down": "scripts/chain/down.sh",
-    "accounts": "pnpm --filter @reachpot/scripts exec tsx accounts.ts",
-    "deploy:local": "pnpm build:contracts && pnpm --filter @reachpot/core gen:abi && pnpm --filter @reachpot/scripts exec tsx deploy.ts --network local",
-    "deploy:testnet": "pnpm build:contracts && pnpm --filter @reachpot/core gen:abi && pnpm --filter @reachpot/scripts exec tsx deploy.ts --network testnet",
-    "e2e": "pnpm --filter @reachpot/scripts exec tsx e2e.ts",
-    "dev": "pnpm --filter @reachpot/web dev"
+    "accounts": "cd scripts && npx tsx accounts.ts",
+    "deploy:local": "cd contracts && forge build && cd ../packages/core && npx tsx src/gen-abi.ts && cd ../../scripts && npx tsx deploy.ts --network local",
+    "deploy:testnet": "cd contracts && forge build && cd ../packages/core && npx tsx src/gen-abi.ts && cd ../../scripts && npx tsx deploy.ts --network testnet",
+    "e2e": "cd scripts && npx tsx e2e.ts",
+    "dev": "cd apps/web && npm run dev"
   }
 }
