@@ -67,28 +67,31 @@ flowchart LR
 3. **Snapshot.** After the window plus a measurement delay, the keeper computes the capped pro-rata ("water-filling")
    split, stores the snapshot in `TransactionStorage`, and posts the Merkle root together with the snapshot's hash and location.
 4. **Dispute.** During the dispute window a guardian can cancel a bad root. Anyone can recompute it from chain data:
-   the campaign page does this in the browser, and `pnpm verify` does it on the CLI.
+   the campaign page does this in the browser, and `npm run verify` does it on the CLI.
 5. **Pay.** The keeper pushes every payout with `payoutMany`. Recipients without a native balance get the existential
    deposit sponsored, and a failing recipient is skipped and retried rather than blocking the batch. Badges are minted or updated.
 6. **Refund.** The brand can reclaim only what was never allocated, or everything if no root is ever posted.
 
 ## Run it locally (full lifecycle in ~5 minutes)
 
-Requirements: Node 22+, pnpm 8+, [Foundry](https://getfoundry.sh). macOS arm64 or Linux x86_64 for the local chain.
+Requirements: git, Node 22+, [Foundry](https://getfoundry.sh). pnpm is optional: without it, setup runs the pinned
+version through npx. macOS arm64 or Linux x86_64 for the local chain.
 
 ```bash
-git clone --recursive https://github.com/lazydevpro/reachpot && cd reachpot
-pnpm install
-pnpm test            # 23 Foundry tests (incl. fuzz + golden fixtures) + 17 allocation tests
-pnpm chain:up        # local chain with Portaldot's runtime: Parity substrate-node (kitchensink) + eth-rpc, sha256-verified
-pnpm deploy:local    # Reachpot + rUSD/NOVA native assets + DEX pools + badge collection → deployments/local.json
-pnpm dev             # web app + keeper on http://localhost:3000
-pnpm e2e             # (another terminal) brand → creators → snapshot → payouts → verify → DEX cash-out → docs/e2e-local.md
+git clone https://github.com/lazydevpro/reachpot && cd reachpot
+npm test               # fetches contract libs + installs deps, then 17 allocation tests + 23 Foundry tests (fuzz, golden fixtures)
+npm run chain:up       # local chain with Portaldot's runtime: Parity substrate-node (kitchensink) + eth-rpc, sha256-verified
+npm run deploy:local   # Reachpot + rUSD/NOVA native assets + DEX pools + badge collection → deployments/local.json
+npm run dev            # web app + keeper on http://localhost:3000
+npm run e2e            # (another terminal) brand → creators → snapshot → payouts → verify → DEX cash-out → docs/e2e-local.md
 ```
+
+Every script works the same with pnpm (`pnpm test`, `pnpm dev`, …). Pass arguments after `--` with npm, e.g.
+`npm run e2e -- --network testnet`.
 
 On the local chain the app offers **pre-funded dev wallets**, so no browser extension is needed: "Dorothy" for brands,
 "Demo creator accounts" for creators. Views are simulated locally; each Short has a "+25K views (demo)" button.
-`pnpm chain:down` stops the chain.
+`npm run chain:down` stops the chain.
 
 ## Deploy
 
