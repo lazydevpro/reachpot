@@ -57,8 +57,8 @@ This injects `DATABASE_URL`, which the app uses automatically.
 | `CRON_SECRET` | any random string | Vercel Cron sends it as `Authorization: Bearer …` to `GET /api/keeper/tick` |
 | `ORACLE_PRIVATE_KEY` | value of `DEPLOYER_PRIVATE_KEY` in `.env` | on testnet one EVM key holds the oracle role |
 | `NATIVE_ADMIN_MNEMONIC` | value of `NATIVE_ADMIN_MNEMONIC` in `.env` (without quotes) | publishes snapshots, mints badges |
-| `VIEWS_SOURCE` | `mock` | until you add `YOUTUBE_API_KEY` |
-| `YOUTUBE_API_KEY` | *(optional)* | real Shorts: views + channel binding code |
+| `VIEWS_SOURCE` | `youtube` | `mock` only for the scripted e2e (simulated views) |
+| `YOUTUBE_API_KEY` | YouTube Data API v3 key | real Shorts: views + description binding code (1 quota unit per 50 videos per refresh) |
 | `ENABLE_DEV_TOOLS` | `1` | **only** while running the scripted e2e (needs the keeper secret too); remove afterwards |
 | `DATABASE_URL` | *(set by Neon)* | |
 

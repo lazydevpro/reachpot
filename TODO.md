@@ -22,7 +22,8 @@ Check-in: **2026-10-24 12:00 UTC** · Final / code freeze: **2026-11-06 04:00 UT
 
 ## Next (final, by Nov 6)
 - [x] Check-in feedback (Oct 26): PASSED. Fixed the one finding ("test script hardcodes pnpm"): `npm test` now works from a plain clone with no pnpm (scripts/setup.sh + scripts/test.sh) #review
-- [ ] Real YouTube mode on testnet with a real Short (needs `YOUTUBE_API_KEY`) #web
+- [x] Hosted app on real YouTube views (Oct 30): key on Vercel, `VIEWS_SOURCE=youtube`, dev tools off; campaign #2 open (`npm run live-campaign`) #web
+- [ ] Real Short submitted to campaign #2 → snapshot → payout on testnet; record in docs/e2e-testnet.md #web
 - [x] Hosting prep: Postgres adapter (Neon via DATABASE_URL, verified with the full e2e over the wire protocol), bundled testnet deployment, serverless guards, CI + keeper GitHub Actions, [docs/deploy.md](docs/deploy.md) #infra
 - [x] Vercel project `reachpot` live at https://reachpot.vercel.app (Neon `reachpot-db`, env vars, keeper secrets on GitHub) #infra
 - [x] Vercel ↔ GitHub connected: every push to main auto-deploys #infra
