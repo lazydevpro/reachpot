@@ -16,8 +16,8 @@ Testnet Deployment Status (Portaldot V3, EVM chain 420420777):
 Demo link: https://reachpot.vercel.app (video: https://youtu.be/EtGjwMlh9Zg)
 
 Topics You Want to Discuss:
-1. View oracle trust: moving from simulated views to the YouTube Data API. What attestation would Portaldot accept (oracle pallet, multi-oracle, zkTLS)?
-2. TransactionStorage retention: snapshots must stay verifiable after payout. What is the mainnet storage period, and is reading them from an archive node the right pattern?
-3. Creator onboarding: can the revive.mapAccount deposit (~3.3 tPOT) and fees be sponsored for first-time creators? Will mainnet deposit rates match testnet?
-4. Ecosystem: Portaldot projects as launch brands paying in their own tokens, plus liquidity support for their AssetConversion pools
-5. Business model: protocol fee in POT or in the pot's token?
+1. View counts: one keeper reports views today. Best way to make this trustless on Portaldot: an oracle pallet, multiple oracles, or zkTLS?
+2. Snapshot storage: how long does TransactionStorage keep data on mainnet? Snapshots must stay readable after payouts.
+3. New creators: can we sponsor the account-mapping deposit (~3.3 tPOT) and fees so creators start with zero POT?
+4. Launch partners: can you connect us with Portaldot projects to fund the first campaigns in their own tokens?
+5. Fees: should our protocol fee be in POT or in the campaign's token?
