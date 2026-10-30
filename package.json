@@ -21,6 +21,7 @@
     "deploy:local": "cd contracts && forge build && cd ../packages/core && npx tsx src/gen-abi.ts && cd ../../scripts && npx tsx deploy.ts --network local",
     "deploy:testnet": "cd contracts && forge build && cd ../packages/core && npx tsx src/gen-abi.ts && cd ../../scripts && npx tsx deploy.ts --network testnet",
     "e2e": "cd scripts && npx tsx e2e.ts",
+    "live-campaign": "cd scripts && npx tsx live-campaign.ts",
     "dev": "cd apps/web && npm run dev"
   }
 }
