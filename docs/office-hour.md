@@ -20,4 +20,4 @@ Topics You Want to Discuss:
 2. Snapshot storage: how long does TransactionStorage keep data on mainnet? Snapshots must stay readable after payouts.
 3. New creators: can we sponsor the account-mapping deposit (~3.3 tPOT) and fees so creators start with zero POT?
 4. Launch partners: can you connect us with Portaldot projects to fund the first campaigns in their own tokens?
-5. Fees: should our protocol fee be in POT or in the campaign's token?
+5. Fees: should our protocol fee be paid in POT or in the token the brand funds the pot with?
